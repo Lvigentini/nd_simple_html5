@@ -10,7 +10,7 @@ const STORAGE_KEYS = {
   inspectorTarget: "html5-editor:inspectorTarget",
 };
 
-const APP_VERSION = "0.3.2";
+const APP_VERSION = "0.3.4";
 
 const DEFAULT_TEMPLATE = `<!doctype html>
 <html lang="en">
@@ -49,8 +49,12 @@ function debounce(fn, delayMs) {
   };
 }
 
-function setStatus(message) {
+let statusHoldUntil = 0;
+function setStatus(message, { holdMs = 0, force = true } = {}) {
+  const now = Date.now();
+  if (!force && now < statusHoldUntil) return;
   $("status").textContent = message;
+  if (holdMs > 0) statusHoldUntil = now + holdMs;
 }
 
 function safeStorageGet(key) {
@@ -117,8 +121,22 @@ function parseHtmlDocument(html) {
   return parser.parseFromString(String(html || ""), "text/html");
 }
 
+function findBodyBounds(fullHtml) {
+  const html = String(fullHtml || "");
+  const lower = html.toLowerCase();
+  const openIdx = lower.indexOf("<body");
+  if (openIdx === -1) return null;
+  const openEnd = lower.indexOf(">", openIdx);
+  if (openEnd === -1) return null;
+  const closeIdx = lower.lastIndexOf("</body");
+  if (closeIdx === -1 || closeIdx < openEnd) return null;
+  return { html, openEnd: openEnd + 1, closeIdx };
+}
+
 function extractBodyInnerHtml(fullHtml) {
   try {
+    const bounds = findBodyBounds(fullHtml);
+    if (bounds) return bounds.html.slice(bounds.openEnd, bounds.closeIdx);
     const doc = parseHtmlDocument(fullHtml);
     return doc.body ? doc.body.innerHTML : "";
   } catch {
@@ -128,18 +146,21 @@ function extractBodyInnerHtml(fullHtml) {
 
 function replaceBodyInnerHtml(fullHtml, newBodyInnerHtml) {
   try {
+    const nextBody = String(newBodyInnerHtml || "");
+    const bounds = findBodyBounds(fullHtml);
+    if (bounds) return bounds.html.slice(0, bounds.openEnd) + nextBody + bounds.html.slice(bounds.closeIdx);
     const doc = parseHtmlDocument(fullHtml);
-    if (doc.body) doc.body.innerHTML = String(newBodyInnerHtml || "");
+    if (doc.body) doc.body.innerHTML = nextBody;
     return `<!doctype html>\n${doc.documentElement.outerHTML}`;
   } catch {
     return fullHtml;
   }
 }
 
-function setPreview(html) {
+function setPreview(html, { announce = false } = {}) {
   const iframe = $("preview");
   iframe.srcdoc = html;
-  setStatus("Preview updated");
+  if (announce) setStatus("Preview updated", { holdMs: 800 });
 }
 
 async function copyToClipboard(text) {
@@ -185,7 +206,7 @@ function getTinyMCEEditor() {
   return globalThis.tinymce.get("visualEditor") || null;
 }
 
-async function initTinyMCE({ onChange, shouldIgnoreChange }) {
+async function initTinyMCE({ onChange, shouldIgnoreChange, onUserEdit }) {
   if (!(await ensureTinyMCELoaded())) return false;
   if (getTinyMCEEditor()) return true;
 
@@ -200,6 +221,9 @@ async function initTinyMCE({ onChange, shouldIgnoreChange }) {
     toolbar_mode: "wrap",
     skin: useLight ? "oxide" : "oxide-dark",
     content_css: useLight ? "default" : "dark",
+    entity_encoding: "raw",
+    convert_urls: false,
+    valid_elements: "*[*]",
     content_style:
       "body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; font-size: 14px; }",
     fontsize_formats: "10px 12px 14px 16px 18px 20px 24px 28px 32px 40px 48px",
@@ -207,26 +231,44 @@ async function initTinyMCE({ onChange, shouldIgnoreChange }) {
       "System=system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;Arial=arial,helvetica,sans-serif;Georgia=georgia,palatino,serif;Times New Roman='Times New Roman',times,serif;Courier New='Courier New',courier,monospace",
     extended_valid_elements:
       "span[data-html5-icon|data-html5-icon-text|data-html5-icon-pos|data-html5-icon-size|data-html5-icon-color|contenteditable|aria-hidden|style]",
-    valid_styles: {
-      "*":
-        "color,background-color,background-image,background,text-align,display,padding,padding-left,margin-left,border-radius,border-width,border-style,border-color,grid-template-columns,gap,position",
-      span: "position,left,top,bottom,transform,width,height,color,font-size,z-index,pointer-events,display,align-items,justify-content,line-height,font-family",
-    },
     setup: (ed) => {
       let ready = false;
+      let lastHtml = null;
       ed.on("init", () => {
         ready = true;
+        lastHtml = ed.getContent({ format: "html" });
       });
 
-      const debounced = debounce(() => onChange(ed), 120);
-      const schedule = () => {
+      const debounced = debounce(() => {
         if (!ready) return;
         if (typeof shouldIgnoreChange === "function" && shouldIgnoreChange()) return;
+        onChange(ed);
+      }, 120);
+
+      const isLikelyUserEdit = (e) => {
+        if (!e) return true;
+        if (typeof e.isTrusted === "boolean" && e.isTrusted === false) return false;
+        const cmd = (e.command || e.commandName || "").toString().toLowerCase();
+        if (cmd.includes("setcontent")) return false;
+        return true;
+      };
+
+      const userChange = (e) => {
+        if (!ready) return;
+        if (typeof shouldIgnoreChange === "function" && shouldIgnoreChange()) return;
+        if (!isLikelyUserEdit(e)) return;
+        const nowHtml = ed.getContent({ format: "html" });
+        if (nowHtml === lastHtml) return;
+        lastHtml = nowHtml;
+        if (typeof onUserEdit === "function") onUserEdit();
         debounced();
       };
 
-      ed.on("input change undo redo keyup paste", schedule);
-      ed.on("SetContent", schedule);
+      ed.on("SetContent", () => {
+        if (!ready) return;
+        lastHtml = ed.getContent({ format: "html" });
+      });
+      ed.on("input paste ExecCommand undo redo", userChange);
     },
   };
 
@@ -308,6 +350,14 @@ function main() {
 
   $("versionPill").textContent = `v${APP_VERSION}`;
 
+  const debugEnabled =
+    window.location.search.includes("debug=1") || safeStorageGet("html5-editor:debug") === "true";
+  const debugLog = (...args) => {
+    if (!debugEnabled) return;
+    // eslint-disable-next-line no-console
+    console.log("[html5-editor]", ...args);
+  };
+
   function setPressed(btn, pressed) {
     btn.setAttribute("aria-pressed", pressed ? "true" : "false");
   }
@@ -363,6 +413,9 @@ function main() {
     inspectorTarget: null,
     inspectorAttached: false,
     inspectorEventsInit: false,
+    ignoreVisualSyncUntil: 0,
+    visualCanWriteCode: false,
+    visualDirty: false,
   };
 
   function isVerticalLayout() {
@@ -425,8 +478,8 @@ function main() {
     }
   }
 
-  function renderPreviewFromCode() {
-    setPreview(editor.value);
+  function renderPreviewFromCode({ announce = false } = {}) {
+    setPreview(editor.value, { announce });
   }
 
   function rgbToHex(rgb) {
@@ -606,6 +659,7 @@ function main() {
     const body = ed.getBody();
     let node = ed.selection.getNode();
     if (!node) return null;
+    if (node.nodeType === 9 && node.body) node = node.body;
     if (node.nodeType === 3) node = node.parentElement;
     if (!node || node.nodeType !== 1) return null;
     if (!body || !body.contains(node)) return null;
@@ -621,14 +675,17 @@ function main() {
     if (!ed) return null;
     const body = ed.getBody();
     if (!body) return null;
-    if (!element || element.nodeType !== 1) return null;
-    if (!body.contains(element)) return null;
+    if (!element) return null;
+    let el = element;
+    if (el.nodeType === 3) el = el.parentElement;
+    if (!el || el.nodeType !== 1) return null;
+    if (!body.contains(el)) return null;
 
-    if (getInspectorTargetMode() === "selected") return element;
+    if (getInspectorTargetMode() === "selected") return el;
 
-    const closestDiv = element.closest ? element.closest("div") : null;
+    const closestDiv = el.closest ? el.closest("div") : null;
     if (closestDiv && body.contains(closestDiv)) return closestDiv;
-    return element;
+    return el;
   }
 
   function setStyleProp(el, propName, value) {
@@ -809,7 +866,8 @@ function main() {
     });
 
     ed.nodeChanged();
-    ed.fire("change");
+    state.visualCanWriteCode = true;
+    syncCodeFromVisual(ed, { silent: true });
     setStatus("Element updated");
     updateInspectorFromTarget(el);
   }
@@ -908,7 +966,7 @@ function main() {
       window.requestAnimationFrame(() => setInspectorTargetFromSelection());
     };
 
-    ed.on("NodeChange SelectionChange keyup", () => scheduleFromSelection());
+    ed.on("NodeChange SelectionChange keyup mouseup focus", () => scheduleFromSelection());
 
     ed.on("click", (e) => {
       const target = getInspectorTargetFromElement(ed, e.target);
@@ -928,18 +986,23 @@ function main() {
   }
 
   function syncCodeFromVisual(ed, { silent = false } = {}) {
+    if (state.applyingToVisual) return;
+    if (!state.visualCanWriteCode) return;
     if (!ed) return;
+    debugLog("visual->code sync");
     const body = ed.getContent({ format: "html" });
     const nextFull = replaceBodyInnerHtml(editor.value, body);
     state.applyingFromVisual = true;
     setEditorValue(nextFull, { preserveIfNotFocused: true });
     state.applyingFromVisual = false;
+    state.visualDirty = false;
     saveCode(editor.value, { silent: true });
     if (!silent) setStatus("Updated from visual");
   }
 
   function flushVisualToCode({ silent = true } = {}) {
     if (!isWysiwygEnabled()) return;
+    if (!state.visualDirty) return;
     const ed = getTinyMCEEditor();
     if (!ed) return;
     syncCodeFromVisual(ed, { silent });
@@ -948,10 +1011,16 @@ function main() {
   async function syncVisualFromCode({ force }) {
     if (!isWysiwygEnabled()) return false;
     setModeUI();
+    debugLog("code->visual sync", { force });
 
     const ok = await initTinyMCE({
       onChange: (ed) => syncCodeFromVisual(ed),
-      shouldIgnoreChange: () => state.applyingToVisual,
+      shouldIgnoreChange: () => state.applyingToVisual || performance.now() < state.ignoreVisualSyncUntil,
+      onUserEdit: () => {
+        state.visualCanWriteCode = true;
+        state.visualDirty = true;
+        debugLog("visual user edit detected; enabling visual->code sync");
+      },
     });
 
     if (!ok) {
@@ -972,12 +1041,15 @@ function main() {
     if (!force && ed.getContent({ format: "html" }) === body) return true;
 
     state.applyingToVisual = true;
+    state.ignoreVisualSyncUntil = performance.now() + 400;
+    state.visualCanWriteCode = false;
     ed.setContent(body);
     state.applyingToVisual = false;
     return true;
   }
 
-  const syncVisualFromCodeDebounced = debounce(() => syncVisualFromCode({ force: false }), 450);
+  const syncVisualFromCodeDebounced = debounce(() => syncVisualFromCode({ force: false }), 200);
+  const announceSavedDebounced = debounce(() => setStatus("Saved", { force: false }), 350);
 
   editor.value = loadInitialCode();
   setPressed(autoRunBtn, safeStorageGet(STORAGE_KEYS.autoRun) === "true");
@@ -994,24 +1066,37 @@ function main() {
   if (isWysiwygEnabled()) {
     syncVisualFromCode({ force: true });
   } else {
-    renderPreviewFromCode();
+    renderPreviewFromCode({ announce: false });
   }
 
   editor.addEventListener("input", () => {
     if (state.applyingFromVisual) return;
+    state.visualCanWriteCode = false;
+    state.visualDirty = false;
     saveCode(editor.value, { silent: true });
-    setStatus("Saved");
+    announceSavedDebounced();
     if (!isAutoRunEnabled()) return;
     if (isWysiwygEnabled()) syncVisualFromCodeDebounced();
-    else renderPreviewFromCode();
+    else renderPreviewFromCode({ announce: false });
+  });
+
+  editor.addEventListener("paste", () => {
+    if (!isAutoRunEnabled()) return;
+    if (!isWysiwygEnabled()) return;
+    window.setTimeout(() => {
+      setStatus("Updating visual…", { holdMs: 800 });
+      syncVisualFromCode({ force: true }).then((ok) => {
+        if (ok) setStatus("Visual updated from code", { holdMs: 800 });
+      });
+    }, 0);
   });
 
   runBtn.addEventListener("click", async () => {
     if (isWysiwygEnabled()) {
       await syncVisualFromCode({ force: true });
-      setStatus("Visual updated from code");
+      setStatus("Visual updated from code", { holdMs: 800 });
     } else {
-      renderPreviewFromCode();
+      renderPreviewFromCode({ announce: true });
     }
   });
 
@@ -1020,15 +1105,15 @@ function main() {
     const blob = new Blob([editor.value], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const opened = window.open(url, "_blank", "noopener,noreferrer");
-    if (!opened) setStatus("Popout blocked by browser");
-    else setStatus("Opened in new tab");
+    if (!opened) setStatus("Popout blocked by browser", { holdMs: 1200 });
+    else setStatus("Opened in new tab", { holdMs: 800 });
     window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
   });
 
   autoRunBtn.addEventListener("click", () => {
     const next = !isAutoRunEnabled();
     setAutoRunEnabled(next);
-    setStatus(next ? "Auto-run enabled" : "Auto-run disabled");
+    setStatus(next ? "Auto-run enabled" : "Auto-run disabled", { holdMs: 800 });
     if (!next) return;
     if (isWysiwygEnabled()) syncVisualFromCode({ force: false });
     else renderPreviewFromCode();
@@ -1039,12 +1124,12 @@ function main() {
     setWysiwygEnabled(next);
     setModeUI();
     if (next) {
-      setStatus("Visual mode enabled");
+      setStatus("Visual mode enabled", { holdMs: 800 });
       await syncVisualFromCode({ force: true });
     } else {
       flushVisualToCode();
       destroyTinyMCEWithInspectorReset();
-      setStatus("Preview mode enabled");
+      setStatus("Preview mode enabled", { holdMs: 800 });
       renderPreviewFromCode();
     }
   });
@@ -1058,16 +1143,16 @@ function main() {
     try {
       flushVisualToCode();
       await copyToClipboard(editor.value);
-      setStatus("Copied");
+      setStatus("Copied", { holdMs: 800 });
     } catch {
-      setStatus("Copy failed");
+      setStatus("Copy failed", { holdMs: 1200 });
     }
   });
 
   downloadBtn.addEventListener("click", () => {
     flushVisualToCode();
     downloadHtml("index.html", editor.value);
-    setStatus("Downloaded index.html");
+    setStatus("Downloaded index.html", { holdMs: 800 });
   });
 
   resetBtn.addEventListener("click", async () => {
@@ -1077,7 +1162,7 @@ function main() {
     editor.value = DEFAULT_TEMPLATE;
     saveCode(editor.value);
     if (isWysiwygEnabled()) await syncVisualFromCode({ force: true });
-    else renderPreviewFromCode();
+    else renderPreviewFromCode({ announce: true });
   });
 
   layoutBtn.addEventListener("click", () => {
@@ -1087,7 +1172,7 @@ function main() {
     updateLayoutButton();
     updateDividerA11y();
     enableWrapOnResizeIfNeeded();
-    setStatus(nextVertical ? "Layout: stacked" : "Layout: side-by-side");
+    setStatus(nextVertical ? "Layout: stacked" : "Layout: side-by-side", { holdMs: 800 });
   });
 
   themeBtn.addEventListener("click", async () => {

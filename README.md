@@ -26,6 +26,7 @@ A tiny, dependency-free HTML5 editor with live preview (similar to html5-editor.
 - Background gradients: use “Background image / gradient” (e.g. `linear-gradient(...)`) to set `background-image` inline on the targeted element.
 - Icon badge: enter a unicode symbol (or click a sample) and choose position/color/size; it auto-adds ~`15px` left margin and extra left padding so text doesn’t overlap (stored inline in the HTML).
 - Pasting into the left code editor never rewrites your HTML; the visual editor only syncs back when you actually edit in WYSIWYG.
+- Debug: open `index.html?debug=1` and watch the console for `code->visual` / `visual->code` sync logs.
 
 ## Potential improvements
 
