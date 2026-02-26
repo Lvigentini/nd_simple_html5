@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTML5 Editor (Simple)</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script
+      referrerpolicy="no-referrer"
+      src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js"
+    ></script>
+    <script defer src="./app.js"></script>
+  </head>
+
+  <body>
+    <svg class="sr-only" width="0" height="0" aria-hidden="true" focusable="false">
+      <symbol id="i-play" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z"></path>
+      </symbol>
+      <symbol id="i-bolt" viewBox="0 0 24 24">
+        <path d="M13 2L3 14h7l-1 8 12-14h-7z"></path>
+      </symbol>
+      <symbol id="i-pen" viewBox="0 0 24 24">
+        <path
+          d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.83H5v-.92l9.06-9.06.92.92L5.92 20.08zM20.71 7.04a1.003 1.003 0 000-1.42l-2.34-2.34a1.003 1.003 0 00-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"
+        ></path>
+      </symbol>
+      <symbol id="i-external" viewBox="0 0 24 24">
+        <path
+          d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3z"
+        ></path>
+        <path d="M5 5h6V3H3v8h2V5z"></path>
+        <path d="M5 19v-6H3v8h8v-2H5z"></path>
+      </symbol>
+      <symbol id="i-download" viewBox="0 0 24 24">
+        <path d="M5 20h14v-2H5v2z"></path>
+        <path d="M11 4h2v9l3.5-3.5 1.4 1.4L12 17.8 6.1 10.9l1.4-1.4L11 13V4z"></path>
+      </symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24">
+        <path d="M16 1H4v14h2V3h10V1z"></path>
+        <path d="M20 5H8v18h12V5zm-2 16H10V7h8v14z"></path>
+      </symbol>
+      <symbol id="i-wrap" viewBox="0 0 24 24">
+        <path
+          d="M4 6h16v2H4V6zm0 4h12a4 4 0 110 8h-3v-2h3a2 2 0 100-4H4v-2zm0 8h6v2H4v-2z"
+        ></path>
+      </symbol>
+      <symbol id="i-reset" viewBox="0 0 24 24">
+        <path
+          d="M12 5V2L7 6l5 4V7c3.31 0 6 2.69 6 6a6 6 0 01-10.24 4.24l-1.42 1.42A8 8 0 0020 13c0-4.42-3.58-8-8-8z"
+        ></path>
+      </symbol>
+      <symbol id="i-layout" viewBox="0 0 24 24">
+        <path d="M3 5h18v14H3V5zm2 2v10h6V7H5zm8 0v10h6V7h-6z"></path>
+      </symbol>
+      <symbol id="i-stack" viewBox="0 0 24 24">
+        <path d="M3 5h18v6H3V5zm0 8h18v6H3v-6z"></path>
+      </symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24">
+        <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z"></path>
+      </symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24">
+        <path
+          d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zM1 13h3v-2H1v2zm10 10h2v-3h-2v3zm9-10h3v-2h-3v2zm-2.34 6.76l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM12 6a6 6 0 100 12 6 6 0 000-12zm5-5h-2v3h2V1zM6.34 19.66l-1.79 1.8 1.41 1.41 1.8-1.79-1.42-1.42zM20.45 4.46l-1.41-1.41-1.8 1.79 1.42 1.42 1.79-1.8z"
+        ></path>
+      </symbol>
+      <symbol id="i-paper" viewBox="0 0 24 24">
+        <path
+          d="M6 2h9l5 5v15a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2zm8 1.5V8h4.5L14 3.5zM8 12h8v2H8v-2zm0 4h8v2H8v-2z"
+        ></path>
+      </symbol>
+      <symbol id="i-x" viewBox="0 0 24 24">
+        <path
+          d="M18.3 5.71L12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.3 19.71 2.89 18.29 9.17 12 2.89 5.71 4.3 4.29l6.29 6.3 6.29-6.3 1.42 1.42z"
+        ></path>
+      </symbol>
+      <symbol id="i-target" viewBox="0 0 24 24">
+        <path
+          d="M11 2h2v3.06A7.002 7.002 0 0118.94 11H22v2h-3.06A7.002 7.002 0 0113 18.94V22h-2v-3.06A7.002 7.002 0 015.06 13H2v-2h3.06A7.002 7.002 0 0111 5.06V2zm1 5a5 5 0 100 10 5 5 0 000-10zm0 2a3 3 0 110 6 3 3 0 010-6z"
+        ></path>
+      </symbol>
+      <symbol id="i-box" viewBox="0 0 24 24">
+        <path d="M3 5h18v14H3V5zm2 2v10h14V7H5z"></path>
+      </symbol>
+    </svg>
+
+    <header class="topbar">
+      <div class="topbar__left">
+        <div class="brand" aria-label="App name">HTML5 Editor</div>
+        <div id="versionPill" class="pill" aria-label="Version"></div>
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+      </div>
+
+      <div class="topbar__right">
+        <div class="btn-group" role="group" aria-label="Run and mode">
+          <button id="runBtn" type="button" class="btn btn--primary btn--icon" title="Run (Ctrl+Enter)">
+            <svg class="icon" aria-hidden="true"><use href="#i-play"></use></svg>
+            <span class="btn__label">Run</span>
+          </button>
+          <button
+            id="wysiwygBtn"
+            type="button"
+            class="btn btn--icon"
+            aria-pressed="false"
+            title="Toggle WYSIWYG"
+          >
+            <svg class="icon" aria-hidden="true"><use href="#i-pen"></use></svg>
+            <span class="btn__label">WYSIWYG</span>
+          </button>
+          <button
+            id="autoRunBtn"
+            type="button"
+            class="btn btn--icon"
+            aria-pressed="false"
+            title="Toggle auto-run on change"
+          >
+            <svg class="icon" aria-hidden="true"><use href="#i-bolt"></use></svg>
+            <span class="btn__label">Auto</span>
+          </button>
+        </div>
+
+        <div class="btn-group" role="group" aria-label="Window actions">
+          <button id="popoutBtn" type="button" class="btn btn--icon" title="Open in new tab">
+            <svg class="icon" aria-hidden="true"><use href="#i-external"></use></svg>
+            <span class="btn__label">Popout</span>
+          </button>
+          <button id="resetBtn" type="button" class="btn btn--danger btn--icon" title="Reset to template">
+            <svg class="icon" aria-hidden="true"><use href="#i-reset"></use></svg>
+            <span class="btn__label">Reset</span>
+          </button>
+          <button id="layoutBtn" type="button" class="btn btn--icon" title="Toggle layout (side-by-side / stacked)">
+            <svg class="icon" aria-hidden="true"><use href="#i-layout"></use></svg>
+            <span class="btn__label">Layout</span>
+          </button>
+          <button id="themeBtn" type="button" class="btn btn--icon" title="Theme">
+            <svg class="icon" aria-hidden="true"><use href="#i-moon"></use></svg>
+            <span class="btn__label">Theme</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="pane">
+        <div class="pane__header">
+          <div class="pane__title">Editor</div>
+          <div class="pane__tools" role="group" aria-label="Editor tools">
+            <button
+              id="wrapBtn"
+              type="button"
+              class="btn btn--small btn--icon"
+              aria-pressed="false"
+              title="Toggle word wrap"
+            >
+              <svg class="icon" aria-hidden="true"><use href="#i-wrap"></use></svg>
+              <span class="btn__label">Wrap</span>
+            </button>
+            <button id="copyBtn" type="button" class="btn btn--small btn--icon" title="Copy HTML">
+              <svg class="icon" aria-hidden="true"><use href="#i-copy"></use></svg>
+              <span class="btn__label">Copy</span>
+            </button>
+            <button id="downloadBtn" type="button" class="btn btn--small btn--icon" title="Download as .html">
+              <svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>
+              <span class="btn__label">Download</span>
+            </button>
+          </div>
+        </div>
+
+        <textarea
+          id="editor"
+          class="editor"
+          spellcheck="false"
+          autocomplete="off"
+          autocapitalize="off"
+          autocorrect="off"
+          aria-label="HTML editor"
+        ></textarea>
+
+        <div class="hint">
+          Shortcuts: <kbd>Ctrl</kbd>+<kbd>Enter</kbd> run, <kbd>Ctrl</kbd>+<kbd>S</kbd> download
+          · Tip: enable <strong>WYSIWYG</strong> for a toolbar-based visual editor
+        </div>
+      </section>
+
+      <div
+        id="divider"
+        class="divider"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize panes"
+        tabindex="0"
+        title="Drag to resize panes"
+      ></div>
+
+      <section class="pane">
+        <div class="pane__header">
+          <div class="pane__title">Visual / Preview</div>
+        </div>
+
+        <div id="visual" class="visual" hidden>
+          <details id="elementInspector" class="inspector" open hidden>
+            <summary class="inspector__summary">
+              <span id="inspectorTitle" class="inspector__title">Element</span>
+              <span id="inspectorMeta" class="inspector__meta"></span>
+            </summary>
+
+            <div class="inspector__body">
+              <div class="inspector__toolbar" role="group" aria-label="Inspector options">
+                <div class="inspector__hint" id="inspectorHint">
+                  Click an element in the visual editor to select it, then adjust settings below.
+                </div>
+                <div class="inspector__targets" role="group" aria-label="Target element">
+                  <button
+                    id="insTargetSelected"
+                    type="button"
+                    class="btn btn--small btn--icon"
+                    aria-pressed="false"
+                    title="Target the selected element"
+                  >
+                    <svg class="icon" aria-hidden="true"><use href="#i-target"></use></svg>
+                    <span class="btn__label">Selected</span>
+                  </button>
+                  <button
+                    id="insTargetContainer"
+                    type="button"
+                    class="btn btn--small btn--icon"
+                    aria-pressed="true"
+                    title="Target the nearest container div"
+                  >
+                    <svg class="icon" aria-hidden="true"><use href="#i-box"></use></svg>
+                    <span class="btn__label">Container</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="inspector__grid">
+                <label class="field">
+                  <span class="field__label">ID</span>
+                  <input id="insId" class="field__input" type="text" placeholder="e.g. hero" />
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Class</span>
+                  <input id="insClass" class="field__input" type="text" placeholder="e.g. card primary" />
+                </label>
+
+                <div class="field field--span2">
+                  <div class="field__label">Icon badge (left side)</div>
+                  <div class="iconctl">
+                    <label class="iconctl__item">
+                      <span class="iconctl__label">Icon</span>
+                      <input
+                        id="insIconText"
+                        class="field__input"
+                        type="text"
+                        inputmode="text"
+                        maxlength="4"
+                        placeholder="e.g. ℹ"
+                        title="Unicode icon (character/emoji)"
+                      />
+                    </label>
+
+                    <label class="iconctl__item">
+                      <span class="iconctl__label">Position</span>
+                      <select id="insIconPos" class="field__select" title="Icon position">
+                        <option value="tl">Top-left</option>
+                        <option value="ml">Middle-left</option>
+                        <option value="bl">Bottom-left</option>
+                      </select>
+                    </label>
+
+                    <label class="iconctl__item">
+                      <span class="iconctl__label">Size</span>
+                      <input
+                        id="insIconSize"
+                        class="field__input"
+                        type="number"
+                        min="8"
+                        max="96"
+                        step="1"
+                        placeholder="18"
+                        title="Icon size (px)"
+                      />
+                    </label>
+
+                    <label class="iconctl__item">
+                      <span class="iconctl__label">Color</span>
+                      <input id="insIconColor" class="color" type="color" value="#111827" title="Icon color" />
+                    </label>
+
+                    <button
+                      id="insIconRemove"
+                      type="button"
+                      class="btn btn--small btn--icon btn--ghost"
+                      title="Remove icon"
+                      aria-label="Remove icon"
+                    >
+                      <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+                    </button>
+                  </div>
+                  <div class="iconctl__samples" aria-label="Icon samples">
+                    Try:
+                    <button type="button" class="chip" data-icon-sample="ℹ">ℹ</button>
+                    <button type="button" class="chip" data-icon-sample="⚠">⚠</button>
+                    <button type="button" class="chip" data-icon-sample="✓">✓</button>
+                    <button type="button" class="chip" data-icon-sample="★">★</button>
+                    <button type="button" class="chip" data-icon-sample="➤">➤</button>
+                  </div>
+                </div>
+
+                <label class="field">
+                  <span class="field__label">Text</span>
+                  <div class="field__row">
+                    <input id="insColor" class="color" type="color" value="#000000" />
+                    <button
+                      id="insColorClear"
+                      type="button"
+                      class="btn btn--small btn--icon btn--ghost"
+                      title="Clear text color"
+                      aria-label="Clear text color"
+                    >
+                      <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+                    </button>
+                  </div>
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Background</span>
+                  <div class="field__row">
+                    <input id="insBg" class="color" type="color" value="#ffffff" />
+                    <button
+                      id="insBgClear"
+                      type="button"
+                      class="btn btn--small btn--icon btn--ghost"
+                      title="Clear background color"
+                      aria-label="Clear background color"
+                    >
+                      <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+                    </button>
+                  </div>
+                </label>
+
+                <label class="field field--span2">
+                  <span class="field__label">Background image / gradient</span>
+                  <div class="field__row">
+                    <input
+                      id="insBgImage"
+                      class="field__input"
+                      type="text"
+                      placeholder="e.g. linear-gradient(90deg, #ffedd5, #bfdbfe)"
+                    />
+                    <button
+                      id="insBgImageClear"
+                      type="button"
+                      class="btn btn--small btn--icon btn--ghost"
+                      title="Clear background image/gradient"
+                      aria-label="Clear background image/gradient"
+                    >
+                      <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+                    </button>
+                  </div>
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Align</span>
+                  <select id="insAlign" class="field__select">
+                    <option value="">Unset</option>
+                    <option value="left">Left</option>
+                    <option value="center">Center</option>
+                    <option value="right">Right</option>
+                    <option value="justify">Justify</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Display</span>
+                  <select id="insDisplay" class="field__select">
+                    <option value="">Unset</option>
+                    <option value="block">Block</option>
+                    <option value="inline-block">Inline-block</option>
+                    <option value="flex">Flex</option>
+                    <option value="grid">Grid</option>
+                    <option value="none">None</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Padding (px)</span>
+                  <input id="insPad" class="field__input" type="number" min="0" step="1" placeholder="-" />
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Radius (px)</span>
+                  <input id="insRadius" class="field__input" type="number" min="0" step="1" placeholder="-" />
+                </label>
+
+                <div class="field field--span2">
+                  <div class="field__label">Border</div>
+                  <div class="border">
+                    <input
+                      id="insBorderW"
+                      class="field__input"
+                      type="number"
+                      min="0"
+                      step="1"
+                      placeholder="Width"
+                      title="Border width (px)"
+                    />
+                    <select id="insBorderStyle" class="field__select" title="Border style">
+                      <option value="">Unset</option>
+                      <option value="solid">Solid</option>
+                      <option value="dashed">Dashed</option>
+                      <option value="dotted">Dotted</option>
+                      <option value="double">Double</option>
+                      <option value="none">None</option>
+                    </select>
+                    <div class="field__row" title="Border color">
+                      <input id="insBorderColor" class="color" type="color" value="#000000" />
+                      <button
+                        id="insBorderColorClear"
+                        type="button"
+                        class="btn btn--small btn--icon btn--ghost"
+                        title="Clear border color"
+                        aria-label="Clear border color"
+                      >
+                        <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="gridControls" class="field field--span2" hidden>
+                  <div class="field__label">Grid</div>
+                  <div class="grid">
+                    <label class="grid__item">
+                      <span class="grid__label">Cols</span>
+                      <input id="insGridCols" class="field__input" type="number" min="1" step="1" placeholder="-" />
+                    </label>
+                    <label class="grid__item">
+                      <span class="grid__label">Gap (px)</span>
+                      <input id="insGridGap" class="field__input" type="number" min="0" step="1" placeholder="-" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <textarea id="visualEditor" aria-label="Visual editor"></textarea>
+          <div id="visualFallback" class="visual__fallback" hidden>
+            TinyMCE didn't load. Check your internet connection (this page uses a CDN).
+          </div>
+        </div>
+
+        <iframe
+          id="preview"
+          class="preview"
+          title="Preview"
+          sandbox="allow-scripts allow-forms allow-modals"
+          referrerpolicy="no-referrer"
+        ></iframe>
+      </section>
+    </main>
+  </body>
+</html>
