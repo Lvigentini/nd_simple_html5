@@ -84,7 +84,7 @@ function setTheme(theme) {
   const normalized = theme === "paper" ? "paper" : theme === "light" ? "light" : "dark";
   safeStorageSet(STORAGE_KEYS.theme, normalized);
 
-  document.body.classList.toggle("theme--light", normalized !== "dark");
+  document.body.classList.toggle("theme--light", normalized === "light");
   document.body.classList.toggle("theme--paper", normalized === "paper");
   setStatus(`Theme: ${getThemeLabel(normalized)}`);
 }
@@ -1307,6 +1307,7 @@ function main() {
       divider.addEventListener("keydown", (e) => {
         if (isVerticalLayout()) {
           if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+          e.preventDefault();
           const current =
             getComputedStyle(document.documentElement).getPropertyValue("--split-top").trim() || "35%";
           const curPct = Number.parseFloat(current);
@@ -1317,18 +1318,19 @@ function main() {
           safeStorageSet(STORAGE_KEYS.splitTop, value);
           setStatus("Pane size saved");
         } else {
-        if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-        const current =
-          getComputedStyle(document.documentElement).getPropertyValue("--split-left").trim() || "50%";
-        const curPct = Number.parseFloat(current);
-        if (Number.isNaN(curPct)) return;
-        const next = e.key === "ArrowLeft" ? curPct - 2 : curPct + 2;
-        const value = `${Math.min(Math.max(next, 20), 80)}%`;
-        document.documentElement.style.setProperty("--split-left", value);
-        safeStorageSet(STORAGE_KEYS.splitLeft, value);
-        setStatus("Pane size saved");
-      }
-    });
+          if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+          e.preventDefault();
+          const current =
+            getComputedStyle(document.documentElement).getPropertyValue("--split-left").trim() || "50%";
+          const curPct = Number.parseFloat(current);
+          if (Number.isNaN(curPct)) return;
+          const next = e.key === "ArrowLeft" ? curPct - 2 : curPct + 2;
+          const value = `${Math.min(Math.max(next, 20), 80)}%`;
+          document.documentElement.style.setProperty("--split-left", value);
+          safeStorageSet(STORAGE_KEYS.splitLeft, value);
+          setStatus("Pane size saved");
+        }
+      });
   })();
 
   window.addEventListener(
