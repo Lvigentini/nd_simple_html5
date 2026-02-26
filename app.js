@@ -10,7 +10,7 @@ const STORAGE_KEYS = {
   inspectorTarget: "html5-editor:inspectorTarget",
 };
 
-const APP_VERSION = "0.3.6";
+const APP_VERSION = "0.3.7";
 
 const DEFAULT_TEMPLATE = `<!doctype html>
 <html lang="en">
@@ -1082,8 +1082,15 @@ function main() {
   const announceSavedDebounced = debounce(() => setStatus("Saved", { force: false }), 350);
 
   editor.value = loadInitialCode();
-  setPressed(autoRunBtn, safeStorageGet(STORAGE_KEYS.autoRun) === "true");
-  setPressed(wysiwygBtn, safeStorageGet(STORAGE_KEYS.wysiwyg) !== "false");
+  const storedAutoRun = safeStorageGet(STORAGE_KEYS.autoRun);
+  const autoRunOn = storedAutoRun === null ? true : storedAutoRun === "true";
+  setPressed(autoRunBtn, autoRunOn);
+  if (storedAutoRun === null) safeStorageSet(STORAGE_KEYS.autoRun, "true");
+
+  const storedWysiwyg = safeStorageGet(STORAGE_KEYS.wysiwyg);
+  const wysiwygOn = storedWysiwyg === null ? true : storedWysiwyg !== "false";
+  setPressed(wysiwygBtn, wysiwygOn);
+  if (storedWysiwyg === null) safeStorageSet(STORAGE_KEYS.wysiwyg, "true");
   const savedWrap = safeStorageGet(STORAGE_KEYS.wrap);
   setWrapEnabled(savedWrap === null ? true : savedWrap === "true", { persist: false, announce: false });
 
