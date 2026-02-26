@@ -10,7 +10,7 @@ const STORAGE_KEYS = {
   inspectorTarget: "html5-editor:inspectorTarget",
 };
 
-const APP_VERSION = "0.3.4";
+const APP_VERSION = "0.3.6";
 
 const DEFAULT_TEMPLATE = `<!doctype html>
 <html lang="en">
@@ -121,6 +121,31 @@ function parseHtmlDocument(html) {
   return parser.parseFromString(String(html || ""), "text/html");
 }
 
+function extractHeadCss(fullHtml) {
+  try {
+    const doc = parseHtmlDocument(fullHtml);
+    const styles = Array.from(doc.head?.querySelectorAll("style") || []);
+    return styles.map((s) => s.textContent || "").join("\n");
+  } catch {
+    return "";
+  }
+}
+
+function syncTinyMCEHeadCss(ed, fullHtml) {
+  if (!ed) return;
+  const doc = typeof ed.getDoc === "function" ? ed.getDoc() : null;
+  const head = doc && doc.head ? doc.head : null;
+  if (!doc || !head) return;
+  const css = extractHeadCss(fullHtml);
+  let styleEl = head.querySelector("style[data-html5-editor-head='true']");
+  if (!styleEl) {
+    styleEl = doc.createElement("style");
+    styleEl.setAttribute("data-html5-editor-head", "true");
+    head.appendChild(styleEl);
+  }
+  styleEl.textContent = css;
+}
+
 function findBodyBounds(fullHtml) {
   const html = String(fullHtml || "");
   const lower = html.toLowerCase();
@@ -224,6 +249,10 @@ async function initTinyMCE({ onChange, shouldIgnoreChange, onUserEdit }) {
     entity_encoding: "raw",
     convert_urls: false,
     valid_elements: "*[*]",
+    verify_html: false,
+    paste_webkit_styles: "all",
+    paste_remove_styles_if_webkit: false,
+    paste_retain_style_properties: "all",
     content_style:
       "body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; font-size: 14px; }",
     fontsize_formats: "10px 12px 14px 16px 18px 20px 24px 28px 32px 40px 48px",
@@ -1036,6 +1065,7 @@ function main() {
     const ed = getTinyMCEEditor();
     if (!ed) return false;
     attachTinyMCEInspector(ed);
+    syncTinyMCEHeadCss(ed, editor.value);
 
     const body = extractBodyInnerHtml(editor.value);
     if (!force && ed.getContent({ format: "html" }) === body) return true;

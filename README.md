@@ -27,6 +27,7 @@ A tiny, dependency-free HTML5 editor with live preview (similar to html5-editor.
 - Icon badge: enter a unicode symbol (or click a sample) and choose position/color/size; it auto-adds ~`15px` left margin and extra left padding so text doesn’t overlap (stored inline in the HTML).
 - Pasting into the left code editor never rewrites your HTML; the visual editor only syncs back when you actually edit in WYSIWYG.
 - Debug: open `index.html?debug=1` and watch the console for `code->visual` / `visual->code` sync logs.
+- TinyMCE is configured to be permissive with inline styles/attributes, but it still only edits the `<body>` (CSS in `<head>` won’t be applied inside the visual editor unless inlined).
 
 ## Potential improvements
 
