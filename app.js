@@ -991,8 +991,14 @@ function main() {
     state.inspectorAttached = true;
     initInspectorEventsOnce();
 
+    let inspectorUpdateScheduled = false;
     const scheduleFromSelection = () => {
-      window.requestAnimationFrame(() => setInspectorTargetFromSelection());
+      if (inspectorUpdateScheduled) return;
+      inspectorUpdateScheduled = true;
+      window.requestAnimationFrame(() => {
+        inspectorUpdateScheduled = false;
+        setInspectorTargetFromSelection();
+      });
     };
 
     ed.on("NodeChange SelectionChange keyup mouseup focus", () => scheduleFromSelection());
@@ -1251,7 +1257,6 @@ function main() {
 
       function setSplitFromPointer(clientX, clientY) {
         const rect = layout.getBoundingClientRect();
-        enableWrapOnResizeIfNeeded();
         if (isVerticalLayout()) {
           const minTopPx = 160;
           const minBottomPx = 260;
@@ -1287,6 +1292,7 @@ function main() {
     function stopDrag() {
       if (!dragging) return;
       dragging = false;
+      enableWrapOnResizeIfNeeded();
       setStatus("Pane size saved");
     }
 
@@ -1313,9 +1319,11 @@ function main() {
           const curPct = Number.parseFloat(current);
           if (Number.isNaN(curPct)) return;
           const next = e.key === "ArrowUp" ? curPct - 2 : curPct + 2;
-          const value = `${Math.min(Math.max(next, 15), 35)}%`;
+          const clamped = Math.min(Math.max(next, 15), 35);
+          const value = `${clamped}%`;
           document.documentElement.style.setProperty("--split-top", value);
           safeStorageSet(STORAGE_KEYS.splitTop, value);
+          divider.setAttribute("aria-valuenow", Math.round(clamped));
           setStatus("Pane size saved");
         } else {
           if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
@@ -1325,9 +1333,11 @@ function main() {
           const curPct = Number.parseFloat(current);
           if (Number.isNaN(curPct)) return;
           const next = e.key === "ArrowLeft" ? curPct - 2 : curPct + 2;
-          const value = `${Math.min(Math.max(next, 20), 80)}%`;
+          const clamped = Math.min(Math.max(next, 20), 80);
+          const value = `${clamped}%`;
           document.documentElement.style.setProperty("--split-left", value);
           safeStorageSet(STORAGE_KEYS.splitLeft, value);
+          divider.setAttribute("aria-valuenow", Math.round(clamped));
           setStatus("Pane size saved");
         }
       });

@@ -50,6 +50,8 @@ body {
 
 body {
   margin: 0;
+  display: flex;
+  flex-direction: column;
   background: var(--bg);
   color: var(--text);
   font-family: var(--sans);
@@ -212,8 +214,13 @@ body {
   height: 16px;
 }
 
+.topbar {
+  flex-shrink: 0;
+}
+
 .layout {
-  height: calc(100% - 58px);
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: minmax(320px, var(--split-left, 1fr)) 10px minmax(320px, 1fr);
   gap: 12px;
@@ -228,8 +235,6 @@ body.layout--vertical .layout {
 @media (max-width: 980px) {
   .layout {
     grid-template-columns: 1fr;
-    height: auto;
-    min-height: calc(100% - 58px);
   }
 }
 
@@ -545,6 +550,11 @@ body.layout--vertical .divider {
 
 .chip:hover {
   border-color: rgba(148, 163, 184, 0.38);
+}
+
+.chip:focus-visible {
+  outline: 2px solid rgba(96, 165, 250, 0.55);
+  outline-offset: 2px;
 }
 
 .visual__fallback {

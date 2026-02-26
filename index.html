@@ -141,7 +141,7 @@
     </header>
 
     <main class="layout">
-      <section class="pane">
+      <section class="pane" aria-label="Code editor">
         <div class="pane__header">
           <div class="pane__title">Editor</div>
           <div class="pane__tools" role="group" aria-label="Editor tools">
@@ -188,11 +188,14 @@
         role="separator"
         aria-orientation="vertical"
         aria-label="Resize panes"
+        aria-valuenow="50"
+        aria-valuemin="20"
+        aria-valuemax="80"
         tabindex="0"
         title="Drag to resize panes"
       ></div>
 
-      <section class="pane">
+      <section class="pane" aria-label="Visual preview">
         <div class="pane__header">
           <div class="pane__title">Visual / Preview</div>
         </div>
