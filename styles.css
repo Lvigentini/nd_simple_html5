@@ -327,10 +327,55 @@ body.layout--vertical .divider {
 }
 
 .visual {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+.styling-fab {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: 0 4px 12px var(--shadow);
+  opacity: 0.75;
+  transition: opacity 0.15s, box-shadow 0.15s;
+}
+
+.styling-fab:hover,
+.styling-fab[aria-pressed="true"] {
+  opacity: 1;
+  box-shadow: 0 6px 18px var(--shadow);
+}
+
+.styling-fab[aria-pressed="true"] {
+  border-color: rgba(96, 165, 250, 0.45);
+  background: rgba(96, 165, 250, 0.14);
+}
+
+.styling-fab:focus-visible {
+  outline: 2px solid rgba(96, 165, 250, 0.55);
+  outline-offset: 2px;
+}
+
+.styling-fab .icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
 }
 
 #visualEditor {
