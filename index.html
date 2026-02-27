@@ -198,257 +198,21 @@
       <section class="pane" aria-label="Visual preview">
         <div class="pane__header">
           <div class="pane__title">Visual / Preview</div>
+          <div class="pane__tools">
+            <button
+              id="inspectorToggleBtn"
+              type="button"
+              class="btn btn--small btn--icon"
+              title="Toggle Element Inspector"
+              hidden
+            >
+              <svg class="icon" aria-hidden="true"><use href="#i-target"></use></svg>
+              <span class="btn__label">Inspector</span>
+            </button>
+          </div>
         </div>
 
         <div id="visual" class="visual" hidden>
-          <details id="elementInspector" class="inspector" open hidden>
-            <summary class="inspector__summary">
-              <span id="inspectorTitle" class="inspector__title">Element</span>
-              <span id="inspectorMeta" class="inspector__meta"></span>
-            </summary>
-
-            <div class="inspector__body">
-              <div class="inspector__toolbar" role="group" aria-label="Inspector options">
-                <div class="inspector__hint" id="inspectorHint">
-                  Click an element in the visual editor to select it, then adjust settings below.
-                </div>
-                <div class="inspector__targets" role="group" aria-label="Target element">
-                  <button
-                    id="insTargetSelected"
-                    type="button"
-                    class="btn btn--small btn--icon"
-                    aria-pressed="false"
-                    title="Target the selected element"
-                  >
-                    <svg class="icon" aria-hidden="true"><use href="#i-target"></use></svg>
-                    <span class="btn__label">Selected</span>
-                  </button>
-                  <button
-                    id="insTargetContainer"
-                    type="button"
-                    class="btn btn--small btn--icon"
-                    aria-pressed="true"
-                    title="Target the nearest container div"
-                  >
-                    <svg class="icon" aria-hidden="true"><use href="#i-box"></use></svg>
-                    <span class="btn__label">Container</span>
-                  </button>
-                </div>
-              </div>
-
-              <div class="inspector__grid">
-                <label class="field">
-                  <span class="field__label">ID</span>
-                  <input id="insId" class="field__input" type="text" placeholder="e.g. hero" />
-                </label>
-
-                <label class="field">
-                  <span class="field__label">Class</span>
-                  <input id="insClass" class="field__input" type="text" placeholder="e.g. card primary" />
-                </label>
-
-                <div class="field field--span2">
-                  <div class="field__label">Icon badge (left side)</div>
-                  <div class="iconctl">
-                    <label class="iconctl__item">
-                      <span class="iconctl__label">Icon</span>
-                      <input
-                        id="insIconText"
-                        class="field__input"
-                        type="text"
-                        inputmode="text"
-                        maxlength="4"
-                        placeholder="e.g. ℹ"
-                        title="Unicode icon (character/emoji)"
-                      />
-                    </label>
-
-                    <label class="iconctl__item">
-                      <span class="iconctl__label">Position</span>
-                      <select id="insIconPos" class="field__select" title="Icon position">
-                        <option value="tl">Top-left</option>
-                        <option value="ml">Middle-left</option>
-                        <option value="bl">Bottom-left</option>
-                      </select>
-                    </label>
-
-                    <label class="iconctl__item">
-                      <span class="iconctl__label">Size</span>
-                      <input
-                        id="insIconSize"
-                        class="field__input"
-                        type="number"
-                        min="8"
-                        max="96"
-                        step="1"
-                        placeholder="18"
-                        title="Icon size (px)"
-                      />
-                    </label>
-
-                    <label class="iconctl__item">
-                      <span class="iconctl__label">Color</span>
-                      <input id="insIconColor" class="color" type="color" value="#111827" title="Icon color" />
-                    </label>
-
-                    <button
-                      id="insIconRemove"
-                      type="button"
-                      class="btn btn--small btn--icon btn--ghost"
-                      title="Remove icon"
-                      aria-label="Remove icon"
-                    >
-                      <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
-                    </button>
-                  </div>
-                  <div class="iconctl__samples" aria-label="Icon samples">
-                    Try:
-                    <button type="button" class="chip" data-icon-sample="ℹ">ℹ</button>
-                    <button type="button" class="chip" data-icon-sample="⚠">⚠</button>
-                    <button type="button" class="chip" data-icon-sample="✓">✓</button>
-                    <button type="button" class="chip" data-icon-sample="★">★</button>
-                    <button type="button" class="chip" data-icon-sample="➤">➤</button>
-                  </div>
-                </div>
-
-                <label class="field">
-                  <span class="field__label">Text</span>
-                  <div class="field__row">
-                    <input id="insColor" class="color" type="color" value="#000000" />
-                    <button
-                      id="insColorClear"
-                      type="button"
-                      class="btn btn--small btn--icon btn--ghost"
-                      title="Clear text color"
-                      aria-label="Clear text color"
-                    >
-                      <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
-                    </button>
-                  </div>
-                </label>
-
-                <label class="field">
-                  <span class="field__label">Background</span>
-                  <div class="field__row">
-                    <input id="insBg" class="color" type="color" value="#ffffff" />
-                    <button
-                      id="insBgClear"
-                      type="button"
-                      class="btn btn--small btn--icon btn--ghost"
-                      title="Clear background color"
-                      aria-label="Clear background color"
-                    >
-                      <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
-                    </button>
-                  </div>
-                </label>
-
-                <label class="field field--span2">
-                  <span class="field__label">Background image / gradient</span>
-                  <div class="field__row">
-                    <input
-                      id="insBgImage"
-                      class="field__input"
-                      type="text"
-                      placeholder="e.g. linear-gradient(90deg, #ffedd5, #bfdbfe)"
-                    />
-                    <button
-                      id="insBgImageClear"
-                      type="button"
-                      class="btn btn--small btn--icon btn--ghost"
-                      title="Clear background image/gradient"
-                      aria-label="Clear background image/gradient"
-                    >
-                      <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
-                    </button>
-                  </div>
-                </label>
-
-                <label class="field">
-                  <span class="field__label">Align</span>
-                  <select id="insAlign" class="field__select">
-                    <option value="">Unset</option>
-                    <option value="left">Left</option>
-                    <option value="center">Center</option>
-                    <option value="right">Right</option>
-                    <option value="justify">Justify</option>
-                  </select>
-                </label>
-
-                <label class="field">
-                  <span class="field__label">Display</span>
-                  <select id="insDisplay" class="field__select">
-                    <option value="">Unset</option>
-                    <option value="block">Block</option>
-                    <option value="inline-block">Inline-block</option>
-                    <option value="flex">Flex</option>
-                    <option value="grid">Grid</option>
-                    <option value="none">None</option>
-                  </select>
-                </label>
-
-                <label class="field">
-                  <span class="field__label">Padding (px)</span>
-                  <input id="insPad" class="field__input" type="number" min="0" step="1" placeholder="-" />
-                </label>
-
-                <label class="field">
-                  <span class="field__label">Radius (px)</span>
-                  <input id="insRadius" class="field__input" type="number" min="0" step="1" placeholder="-" />
-                </label>
-
-                <div class="field field--span2">
-                  <div class="field__label">Border</div>
-                  <div class="border">
-                    <input
-                      id="insBorderW"
-                      class="field__input"
-                      type="number"
-                      min="0"
-                      step="1"
-                      placeholder="Width"
-                      title="Border width (px)"
-                    />
-                    <select id="insBorderStyle" class="field__select" title="Border style">
-                      <option value="">Unset</option>
-                      <option value="solid">Solid</option>
-                      <option value="dashed">Dashed</option>
-                      <option value="dotted">Dotted</option>
-                      <option value="double">Double</option>
-                      <option value="none">None</option>
-                    </select>
-                    <div class="field__row" title="Border color">
-                      <input id="insBorderColor" class="color" type="color" value="#000000" />
-                      <button
-                        id="insBorderColorClear"
-                        type="button"
-                        class="btn btn--small btn--icon btn--ghost"
-                        title="Clear border color"
-                        aria-label="Clear border color"
-                      >
-                        <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div id="gridControls" class="field field--span2" hidden>
-                  <div class="field__label">Grid</div>
-                  <div class="grid">
-                    <label class="grid__item">
-                      <span class="grid__label">Cols</span>
-                      <input id="insGridCols" class="field__input" type="number" min="1" step="1" placeholder="-" />
-                    </label>
-                    <label class="grid__item">
-                      <span class="grid__label">Gap (px)</span>
-                      <input id="insGridGap" class="field__input" type="number" min="0" step="1" placeholder="-" />
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </details>
-
           <textarea id="visualEditor" aria-label="Visual editor"></textarea>
           <div id="visualFallback" class="visual__fallback" hidden>
             TinyMCE didn't load. Check your internet connection (this page uses a CDN).
@@ -464,5 +228,264 @@
         ></iframe>
       </section>
     </main>
+
+    <div id="elementInspector" class="inspector-float" hidden>
+      <div id="inspectorTitlebar" class="inspector-float__titlebar">
+        <div class="inspector-float__titlebar-left">
+          <span id="inspectorTitle" class="inspector-float__title">Element inspector</span>
+          <span id="inspectorMeta" class="inspector__meta"></span>
+        </div>
+        <button
+          id="inspectorCloseBtn"
+          type="button"
+          class="btn btn--small btn--icon btn--ghost"
+          title="Close inspector"
+          aria-label="Close inspector"
+        >
+          <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+        </button>
+      </div>
+
+      <div class="inspector__body">
+        <div class="inspector__toolbar" role="group" aria-label="Inspector options">
+          <div class="inspector__hint" id="inspectorHint">
+            Click an element in the visual editor to select it, then adjust settings below.
+          </div>
+          <div class="inspector__targets" role="group" aria-label="Target element">
+            <button
+              id="insTargetSelected"
+              type="button"
+              class="btn btn--small btn--icon"
+              aria-pressed="false"
+              title="Target the selected element"
+            >
+              <svg class="icon" aria-hidden="true"><use href="#i-target"></use></svg>
+              <span class="btn__label">Selected</span>
+            </button>
+            <button
+              id="insTargetContainer"
+              type="button"
+              class="btn btn--small btn--icon"
+              aria-pressed="true"
+              title="Target the nearest container div"
+            >
+              <svg class="icon" aria-hidden="true"><use href="#i-box"></use></svg>
+              <span class="btn__label">Container</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="inspector__grid">
+          <label class="field">
+            <span class="field__label">ID</span>
+            <input id="insId" class="field__input" type="text" placeholder="e.g. hero" />
+          </label>
+
+          <label class="field">
+            <span class="field__label">Class</span>
+            <input id="insClass" class="field__input" type="text" placeholder="e.g. card primary" />
+          </label>
+
+          <div class="field field--span2">
+            <div class="field__label">Icon badge (left side)</div>
+            <div class="iconctl">
+              <label class="iconctl__item">
+                <span class="iconctl__label">Icon</span>
+                <input
+                  id="insIconText"
+                  class="field__input"
+                  type="text"
+                  inputmode="text"
+                  maxlength="4"
+                  placeholder="e.g. ℹ"
+                  title="Unicode icon (character/emoji)"
+                />
+              </label>
+
+              <label class="iconctl__item">
+                <span class="iconctl__label">Position</span>
+                <select id="insIconPos" class="field__select" title="Icon position">
+                  <option value="tl">Top-left</option>
+                  <option value="ml">Middle-left</option>
+                  <option value="bl">Bottom-left</option>
+                </select>
+              </label>
+
+              <label class="iconctl__item">
+                <span class="iconctl__label">Size</span>
+                <input
+                  id="insIconSize"
+                  class="field__input"
+                  type="number"
+                  min="8"
+                  max="96"
+                  step="1"
+                  placeholder="18"
+                  title="Icon size (px)"
+                />
+              </label>
+
+              <label class="iconctl__item">
+                <span class="iconctl__label">Color</span>
+                <input id="insIconColor" class="color" type="color" value="#111827" title="Icon color" />
+              </label>
+
+              <button
+                id="insIconRemove"
+                type="button"
+                class="btn btn--small btn--icon btn--ghost"
+                title="Remove icon"
+                aria-label="Remove icon"
+              >
+                <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+              </button>
+            </div>
+            <div class="iconctl__samples" aria-label="Icon samples">
+              Try:
+              <button type="button" class="chip" data-icon-sample="ℹ">ℹ</button>
+              <button type="button" class="chip" data-icon-sample="⚠">⚠</button>
+              <button type="button" class="chip" data-icon-sample="✓">✓</button>
+              <button type="button" class="chip" data-icon-sample="★">★</button>
+              <button type="button" class="chip" data-icon-sample="➤">➤</button>
+            </div>
+          </div>
+
+          <label class="field">
+            <span class="field__label">Text</span>
+            <div class="field__row">
+              <input id="insColor" class="color" type="color" value="#000000" />
+              <button
+                id="insColorClear"
+                type="button"
+                class="btn btn--small btn--icon btn--ghost"
+                title="Clear text color"
+                aria-label="Clear text color"
+              >
+                <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+              </button>
+            </div>
+          </label>
+
+          <label class="field">
+            <span class="field__label">Background</span>
+            <div class="field__row">
+              <input id="insBg" class="color" type="color" value="#ffffff" />
+              <button
+                id="insBgClear"
+                type="button"
+                class="btn btn--small btn--icon btn--ghost"
+                title="Clear background color"
+                aria-label="Clear background color"
+              >
+                <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+              </button>
+            </div>
+          </label>
+
+          <label class="field field--span2">
+            <span class="field__label">Background image / gradient</span>
+            <div class="field__row">
+              <input
+                id="insBgImage"
+                class="field__input"
+                type="text"
+                placeholder="e.g. linear-gradient(90deg, #ffedd5, #bfdbfe)"
+              />
+              <button
+                id="insBgImageClear"
+                type="button"
+                class="btn btn--small btn--icon btn--ghost"
+                title="Clear background image/gradient"
+                aria-label="Clear background image/gradient"
+              >
+                <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+              </button>
+            </div>
+          </label>
+
+          <label class="field">
+            <span class="field__label">Align</span>
+            <select id="insAlign" class="field__select">
+              <option value="">Unset</option>
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+              <option value="justify">Justify</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field__label">Display</span>
+            <select id="insDisplay" class="field__select">
+              <option value="">Unset</option>
+              <option value="block">Block</option>
+              <option value="inline-block">Inline-block</option>
+              <option value="flex">Flex</option>
+              <option value="grid">Grid</option>
+              <option value="none">None</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field__label">Padding (px)</span>
+            <input id="insPad" class="field__input" type="number" min="0" step="1" placeholder="-" />
+          </label>
+
+          <label class="field">
+            <span class="field__label">Radius (px)</span>
+            <input id="insRadius" class="field__input" type="number" min="0" step="1" placeholder="-" />
+          </label>
+
+          <div class="field field--span2">
+            <div class="field__label">Border</div>
+            <div class="border">
+              <input
+                id="insBorderW"
+                class="field__input"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="Width"
+                title="Border width (px)"
+              />
+              <select id="insBorderStyle" class="field__select" title="Border style">
+                <option value="">Unset</option>
+                <option value="solid">Solid</option>
+                <option value="dashed">Dashed</option>
+                <option value="dotted">Dotted</option>
+                <option value="double">Double</option>
+                <option value="none">None</option>
+              </select>
+              <div class="field__row" title="Border color">
+                <input id="insBorderColor" class="color" type="color" value="#000000" />
+                <button
+                  id="insBorderColorClear"
+                  type="button"
+                  class="btn btn--small btn--icon btn--ghost"
+                  title="Clear border color"
+                  aria-label="Clear border color"
+                >
+                  <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="gridControls" class="field field--span2" hidden>
+            <div class="field__label">Grid</div>
+            <div class="grid">
+              <label class="grid__item">
+                <span class="grid__label">Cols</span>
+                <input id="insGridCols" class="field__input" type="number" min="1" step="1" placeholder="-" />
+              </label>
+              <label class="grid__item">
+                <span class="grid__label">Gap (px)</span>
+                <input id="insGridGap" class="field__input" type="number" min="0" step="1" placeholder="-" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

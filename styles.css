@@ -344,32 +344,48 @@ body.layout--vertical .divider {
   border-radius: 0 !important;
 }
 
-.inspector {
-  border-bottom: 1px solid var(--border);
-  background: rgba(148, 163, 184, 0.06);
+.inspector-float {
+  position: fixed;
+  z-index: 100;
+  width: 380px;
+  max-width: min(380px, calc(100vw - 24px));
+  max-height: 80vh;
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 12px 40px var(--shadow), 0 0 0 1px var(--border);
 }
 
-.inspector__summary {
-  list-style: none;
-  cursor: pointer;
-  user-select: none;
+.inspector-float__titlebar {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  cursor: grab;
+  user-select: none;
+}
+
+.inspector-float__titlebar:active {
+  cursor: grabbing;
+}
+
+.inspector-float__titlebar-left {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.inspector-float__title {
   color: var(--muted);
   font-size: 12px;
   letter-spacing: 0.4px;
   text-transform: uppercase;
-}
-
-.inspector__summary::-webkit-details-marker {
-  display: none;
-}
-
-.inspector__title {
-  color: var(--muted);
+  white-space: nowrap;
 }
 
 .inspector__meta {

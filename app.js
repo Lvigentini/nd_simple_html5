@@ -8,9 +8,23 @@ const STORAGE_KEYS = {
   splitLeft: "html5-editor:splitLeft",
   splitTop: "html5-editor:splitTop",
   inspectorTarget: "html5-editor:inspectorTarget",
+  inspectorPos: "html5-editor:inspectorPos",
+  inspectorOpen: "html5-editor:inspectorOpen",
 };
 
-const APP_VERSION = "0.3.7";
+const APP_VERSION = "0.3.8";
+
+const TIMING = {
+  debounceMs: 120,
+  syncIgnoreWindowMs: 400,
+  statusHoldMs: 800,
+  blobCleanupMs: 60_000,
+};
+const LAYOUT = {
+  minPaneWidthPx: 320,
+  minPaneTopPx: 160,
+  minPaneBottomPx: 260,
+};
 
 const DEFAULT_TEMPLATE = `<!doctype html>
 <html lang="en">
@@ -131,19 +145,19 @@ function extractHeadCss(fullHtml) {
   }
 }
 
-function syncTinyMCEHeadCss(ed, fullHtml) {
+function syncTinyMCEHeadCss(ed, fullHtml, css) {
   if (!ed) return;
   const doc = typeof ed.getDoc === "function" ? ed.getDoc() : null;
   const head = doc && doc.head ? doc.head : null;
   if (!doc || !head) return;
-  const css = extractHeadCss(fullHtml);
+  const resolved = css !== undefined ? css : extractHeadCss(fullHtml);
   let styleEl = head.querySelector("style[data-html5-editor-head='true']");
   if (!styleEl) {
     styleEl = doc.createElement("style");
     styleEl.setAttribute("data-html5-editor-head", "true");
     head.appendChild(styleEl);
   }
-  styleEl.textContent = css;
+  styleEl.textContent = resolved;
 }
 
 function findBodyBounds(fullHtml) {
@@ -185,7 +199,7 @@ function replaceBodyInnerHtml(fullHtml, newBodyInnerHtml) {
 function setPreview(html, { announce = false } = {}) {
   const iframe = $("preview");
   iframe.srcdoc = html;
-  if (announce) setStatus("Preview updated", { holdMs: 800 });
+  if (announce) setStatus("Preview updated", { holdMs: TIMING.statusHoldMs });
 }
 
 async function copyToClipboard(text) {
@@ -272,7 +286,7 @@ async function initTinyMCE({ onChange, shouldIgnoreChange, onUserEdit }) {
         if (!ready) return;
         if (typeof shouldIgnoreChange === "function" && shouldIgnoreChange()) return;
         onChange(ed);
-      }, 120);
+      }, TIMING.debounceMs);
 
       const isLikelyUserEdit = (e) => {
         if (!e) return true;
@@ -347,6 +361,9 @@ function main() {
   const visual = $("visual");
   const visualFallback = $("visualFallback");
   const elementInspector = $("elementInspector");
+  const inspectorToggleBtn = $("inspectorToggleBtn");
+  const inspectorCloseBtn = $("inspectorCloseBtn");
+  const inspectorTitlebar = $("inspectorTitlebar");
   const inspectorTitle = $("inspectorTitle");
   const inspectorMeta = $("inspectorMeta");
   const inspectorHint = $("inspectorHint");
@@ -466,9 +483,12 @@ function main() {
     const visualOn = isWysiwygEnabled();
     visual.hidden = !visualOn;
     preview.hidden = visualOn;
-    elementInspector.hidden = !visualOn;
-    if (!visualOn) state.inspectorTarget = null;
-    if (!visualOn) state.inspectorAttached = false;
+    inspectorToggleBtn.hidden = !visualOn;
+    if (!visualOn) {
+      closeInspector();
+      state.inspectorTarget = null;
+      state.inspectorAttached = false;
+    }
   }
 
   function setWrapEnabled(enabled, { persist = true, announce = true } = {}) {
@@ -482,7 +502,7 @@ function main() {
   function enableWrapOnResizeIfNeeded() {
     if (editor.classList.contains("editor--wrap")) return;
     const now = Date.now();
-    const shouldAnnounce = now - state.lastAutoWrapAt > 800;
+    const shouldAnnounce = now - state.lastAutoWrapAt > TIMING.statusHoldMs;
     state.lastAutoWrapAt = now;
     setWrapEnabled(true, { persist: true, announce: shouldAnnounce });
   }
@@ -901,7 +921,7 @@ function main() {
     updateInspectorFromTarget(el);
   }
 
-  const applyInspectorDebounced = debounce(() => applyInspectorToTarget(), 120);
+  const applyInspectorDebounced = debounce(() => applyInspectorToTarget(), TIMING.debounceMs);
 
   function setInspectorTargetFromSelection() {
     if (!isWysiwygEnabled()) return;
@@ -910,6 +930,114 @@ function main() {
     const el = getSelectedElementTarget(ed);
     state.inspectorTarget = el;
     updateInspectorFromTarget(el);
+  }
+
+  function openInspector() {
+    elementInspector.hidden = false;
+    setPressed(inspectorToggleBtn, true);
+    safeStorageSet(STORAGE_KEYS.inspectorOpen, "true");
+    restoreInspectorPosition();
+  }
+
+  function closeInspector() {
+    elementInspector.hidden = true;
+    setPressed(inspectorToggleBtn, false);
+    safeStorageSet(STORAGE_KEYS.inspectorOpen, "false");
+  }
+
+  function toggleInspector() {
+    if (elementInspector.hidden) openInspector();
+    else closeInspector();
+  }
+
+  function saveInspectorPosition() {
+    const x = elementInspector.offsetLeft;
+    const y = elementInspector.offsetTop;
+    safeStorageSet(STORAGE_KEYS.inspectorPos, JSON.stringify({ x, y }));
+  }
+
+  function clampInspectorToViewport() {
+    const w = elementInspector.offsetWidth || 380;
+    const h = elementInspector.offsetHeight || 200;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    let x = elementInspector.offsetLeft;
+    let y = elementInspector.offsetTop;
+    x = Math.min(Math.max(x, 0), vw - Math.min(w, vw));
+    y = Math.min(Math.max(y, 0), vh - Math.min(h, vh));
+    elementInspector.style.right = "auto";
+    elementInspector.style.left = `${x}px`;
+    elementInspector.style.top = `${y}px`;
+  }
+
+  function restoreInspectorPosition() {
+    const raw = safeStorageGet(STORAGE_KEYS.inspectorPos);
+    if (raw) {
+      try {
+        const { x, y } = JSON.parse(raw);
+        elementInspector.style.right = "auto";
+        elementInspector.style.left = `${x}px`;
+        elementInspector.style.top = `${y}px`;
+      } catch {
+        elementInspector.style.left = "auto";
+        elementInspector.style.right = "24px";
+        elementInspector.style.top = "64px";
+      }
+    } else {
+      elementInspector.style.left = "auto";
+      elementInspector.style.right = "24px";
+      elementInspector.style.top = "64px";
+    }
+    clampInspectorToViewport();
+  }
+
+  function setupInspectorDrag() {
+    let dragging = false;
+    let startX = 0;
+    let startY = 0;
+    let origX = 0;
+    let origY = 0;
+
+    inspectorTitlebar.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("button")) return;
+      dragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      origX = elementInspector.offsetLeft;
+      origY = elementInspector.offsetTop;
+      elementInspector.style.right = "auto";
+      inspectorTitlebar.setPointerCapture(e.pointerId);
+    });
+
+    inspectorTitlebar.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      elementInspector.style.left = `${origX + dx}px`;
+      elementInspector.style.top = `${origY + dy}px`;
+    });
+
+    const stopDrag = () => {
+      if (!dragging) return;
+      dragging = false;
+      clampInspectorToViewport();
+      saveInspectorPosition();
+    };
+    inspectorTitlebar.addEventListener("pointerup", stopDrag);
+    inspectorTitlebar.addEventListener("pointercancel", stopDrag);
+  }
+
+  function wireColorClear(colorInput, clearBtn, onAny) {
+    colorInput.addEventListener("input", () => {
+      colorInput.dataset.unset = "false";
+      clearBtn.disabled = false;
+      onAny();
+    });
+    clearBtn.addEventListener("click", () => {
+      colorInput.dataset.unset = "true";
+      clearBtn.disabled = true;
+      onAny();
+    });
   }
 
   function initInspectorEventsOnce() {
@@ -937,40 +1065,13 @@ function main() {
       onAny();
     });
 
-    insColor.addEventListener("input", () => {
-      insColor.dataset.unset = "false";
-      insColorClear.disabled = false;
-      onAny();
-    });
-    insBg.addEventListener("input", () => {
-      insBg.dataset.unset = "false";
-      insBgClear.disabled = false;
-      onAny();
-    });
-    insBorderColor.addEventListener("input", () => {
-      insBorderColor.dataset.unset = "false";
-      insBorderColorClear.disabled = false;
-      onAny();
-    });
+    wireColorClear(insColor, insColorClear, onAny);
+    wireColorClear(insBg, insBgClear, onAny);
+    wireColorClear(insBorderColor, insBorderColorClear, onAny);
 
-    insColorClear.addEventListener("click", () => {
-      insColor.dataset.unset = "true";
-      insColorClear.disabled = true;
-      onAny();
-    });
-    insBgClear.addEventListener("click", () => {
-      insBg.dataset.unset = "true";
-      insBgClear.disabled = true;
-      onAny();
-    });
     insBgImageClear.addEventListener("click", () => {
       insBgImage.value = "";
       insBgImageClear.disabled = true;
-      onAny();
-    });
-    insBorderColorClear.addEventListener("click", () => {
-      insBorderColor.dataset.unset = "true";
-      insBorderColorClear.disabled = true;
       onAny();
     });
 
@@ -1071,13 +1172,14 @@ function main() {
     const ed = getTinyMCEEditor();
     if (!ed) return false;
     attachTinyMCEInspector(ed);
-    syncTinyMCEHeadCss(ed, editor.value);
+    const headCss = extractHeadCss(editor.value);
+    syncTinyMCEHeadCss(ed, editor.value, headCss);
 
     const body = extractBodyInnerHtml(editor.value);
     if (!force && ed.getContent({ format: "html" }) === body) return true;
 
     state.applyingToVisual = true;
-    state.ignoreVisualSyncUntil = performance.now() + 400;
+    state.ignoreVisualSyncUntil = performance.now() + TIMING.syncIgnoreWindowMs;
     state.visualCanWriteCode = false;
     ed.setContent(body);
     state.applyingToVisual = false;
@@ -1106,6 +1208,14 @@ function main() {
   setInspectorTargetMode(getInspectorTargetMode());
   setInspectorFieldsEnabled(false);
 
+  inspectorToggleBtn.addEventListener("click", toggleInspector);
+  inspectorCloseBtn.addEventListener("click", closeInspector);
+  setupInspectorDrag();
+
+  if (isWysiwygEnabled() && safeStorageGet(STORAGE_KEYS.inspectorOpen) === "true") {
+    openInspector();
+  }
+
   if (isWysiwygEnabled()) {
     syncVisualFromCode({ force: true });
   } else {
@@ -1127,9 +1237,9 @@ function main() {
     if (!isAutoRunEnabled()) return;
     if (!isWysiwygEnabled()) return;
     window.setTimeout(() => {
-      setStatus("Updating visual…", { holdMs: 800 });
+      setStatus("Updating visual…", { holdMs: TIMING.statusHoldMs });
       syncVisualFromCode({ force: true }).then((ok) => {
-        if (ok) setStatus("Visual updated from code", { holdMs: 800 });
+        if (ok) setStatus("Visual updated from code", { holdMs: TIMING.statusHoldMs });
       });
     }, 0);
   });
@@ -1137,7 +1247,7 @@ function main() {
   runBtn.addEventListener("click", async () => {
     if (isWysiwygEnabled()) {
       await syncVisualFromCode({ force: true });
-      setStatus("Visual updated from code", { holdMs: 800 });
+      setStatus("Visual updated from code", { holdMs: TIMING.statusHoldMs });
     } else {
       renderPreviewFromCode({ announce: true });
     }
@@ -1148,15 +1258,15 @@ function main() {
     const blob = new Blob([editor.value], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const opened = window.open(url, "_blank", "noopener,noreferrer");
-    if (!opened) setStatus("Popout blocked by browser", { holdMs: 1200 });
-    else setStatus("Opened in new tab", { holdMs: 800 });
-    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    if (!opened) setStatus("Popout blocked by browser", { holdMs: TIMING.statusHoldMs });
+    else setStatus("Opened in new tab", { holdMs: TIMING.statusHoldMs });
+    window.setTimeout(() => URL.revokeObjectURL(url), TIMING.blobCleanupMs);
   });
 
   autoRunBtn.addEventListener("click", () => {
     const next = !isAutoRunEnabled();
     setAutoRunEnabled(next);
-    setStatus(next ? "Auto-run enabled" : "Auto-run disabled", { holdMs: 800 });
+    setStatus(next ? "Auto-run enabled" : "Auto-run disabled", { holdMs: TIMING.statusHoldMs });
     if (!next) return;
     if (isWysiwygEnabled()) syncVisualFromCode({ force: false });
     else renderPreviewFromCode();
@@ -1167,12 +1277,12 @@ function main() {
     setWysiwygEnabled(next);
     setModeUI();
     if (next) {
-      setStatus("Visual mode enabled", { holdMs: 800 });
+      setStatus("Visual mode enabled", { holdMs: TIMING.statusHoldMs });
       await syncVisualFromCode({ force: true });
     } else {
       flushVisualToCode();
       destroyTinyMCEWithInspectorReset();
-      setStatus("Preview mode enabled", { holdMs: 800 });
+      setStatus("Preview mode enabled", { holdMs: TIMING.statusHoldMs });
       renderPreviewFromCode();
     }
   });
@@ -1186,16 +1296,16 @@ function main() {
     try {
       flushVisualToCode();
       await copyToClipboard(editor.value);
-      setStatus("Copied", { holdMs: 800 });
+      setStatus("Copied", { holdMs: TIMING.statusHoldMs });
     } catch {
-      setStatus("Copy failed", { holdMs: 1200 });
+      setStatus("Copy failed", { holdMs: TIMING.statusHoldMs });
     }
   });
 
   downloadBtn.addEventListener("click", () => {
     flushVisualToCode();
     downloadHtml("index.html", editor.value);
-    setStatus("Downloaded index.html", { holdMs: 800 });
+    setStatus("Downloaded index.html", { holdMs: TIMING.statusHoldMs });
   });
 
   resetBtn.addEventListener("click", async () => {
@@ -1215,7 +1325,7 @@ function main() {
     updateLayoutButton();
     updateDividerA11y();
     enableWrapOnResizeIfNeeded();
-    setStatus(nextVertical ? "Layout: stacked" : "Layout: side-by-side", { holdMs: 800 });
+    setStatus(nextVertical ? "Layout: stacked" : "Layout: side-by-side", { holdMs: TIMING.statusHoldMs });
   });
 
   themeBtn.addEventListener("click", async () => {
@@ -1258,8 +1368,8 @@ function main() {
       function setSplitFromPointer(clientX, clientY) {
         const rect = layout.getBoundingClientRect();
         if (isVerticalLayout()) {
-          const minTopPx = 160;
-          const minBottomPx = 260;
+          const minTopPx = LAYOUT.minPaneTopPx;
+          const minBottomPx = LAYOUT.minPaneBottomPx;
           const maxTopPx = Math.min(rect.height * 0.35, rect.height - minBottomPx);
           const cappedMaxTopPx = Math.max(minTopPx, maxTopPx);
           const y = Math.min(Math.max(clientY - rect.top, minTopPx), cappedMaxTopPx);
@@ -1268,7 +1378,7 @@ function main() {
           document.documentElement.style.setProperty("--split-top", value);
           safeStorageSet(STORAGE_KEYS.splitTop, value);
         } else {
-        const x = Math.min(Math.max(clientX - rect.left, 320), rect.width - 320);
+        const x = Math.min(Math.max(clientX - rect.left, LAYOUT.minPaneWidthPx), rect.width - LAYOUT.minPaneWidthPx);
         const pct = (x / rect.width) * 100;
         const value = `${pct.toFixed(1)}%`;
         document.documentElement.style.setProperty("--split-left", value);
@@ -1347,6 +1457,7 @@ function main() {
     "resize",
     debounce(() => {
       enableWrapOnResizeIfNeeded();
+      if (!elementInspector.hidden) clampInspectorToViewport();
     }, 200),
   );
 }
