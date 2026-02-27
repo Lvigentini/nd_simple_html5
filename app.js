@@ -1109,10 +1109,18 @@ function main() {
     });
   }
 
+  function positionFabBelowToolbar() {
+    const header = visual.querySelector(".tox-editor-header");
+    if (!header) return;
+    const offset = header.offsetHeight + 8;
+    visual.style.setProperty("--fab-top", `${offset}px`);
+  }
+
   function attachTinyMCEInspector(ed) {
     if (!ed || state.inspectorAttached) return;
     state.inspectorAttached = true;
     initInspectorEventsOnce();
+    positionFabBelowToolbar();
 
     let inspectorUpdateScheduled = false;
     const scheduleFromSelection = () => {
@@ -1480,6 +1488,7 @@ function main() {
     debounce(() => {
       enableWrapOnResizeIfNeeded();
       if (!elementInspector.hidden) clampInspectorToViewport();
+      if (isWysiwygEnabled()) positionFabBelowToolbar();
     }, 200),
   );
 }
