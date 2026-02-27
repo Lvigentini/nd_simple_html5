@@ -351,6 +351,7 @@ function main() {
   const wysiwygBtn = $("wysiwygBtn");
   const autoRunBtn = $("autoRunBtn");
   const wrapBtn = $("wrapBtn");
+  const loadBtn = $("loadBtn");
   const copyBtn = $("copyBtn");
   const downloadBtn = $("downloadBtn");
   const resetBtn = $("resetBtn");
@@ -1322,6 +1323,47 @@ function main() {
     setWrapEnabled(next, { persist: true, announce: true });
   });
 
+  function loadHtmlIntoEditor(html) {
+    destroyTinyMCEWithInspectorReset();
+    editor.value = html;
+    saveCode(html);
+    if (isWysiwygEnabled()) syncVisualFromCode({ force: true });
+    else renderPreviewFromCode({ announce: true });
+  }
+
+  loadBtn.addEventListener("click", async (e) => {
+    if (e.shiftKey) {
+      const url = window.prompt("Enter URL to load HTML from:");
+      if (!url) return;
+      try {
+        setStatus("Fetching…", { holdMs: TIMING.statusHoldMs });
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const html = await resp.text();
+        loadHtmlIntoEditor(html);
+        setStatus("Loaded from URL", { holdMs: TIMING.statusHoldMs });
+      } catch (err) {
+        setStatus(`Load failed: ${err.message}`, { holdMs: TIMING.statusHoldMs });
+      }
+      return;
+    }
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".html,.htm,text/html";
+    input.addEventListener("change", () => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        loadHtmlIntoEditor(reader.result);
+        setStatus(`Loaded ${file.name}`, { holdMs: TIMING.statusHoldMs });
+      };
+      reader.onerror = () => setStatus("Load failed", { holdMs: TIMING.statusHoldMs });
+      reader.readAsText(file);
+    });
+    input.click();
+  });
+
   copyBtn.addEventListener("click", async () => {
     try {
       flushVisualToCode();
@@ -1381,6 +1423,11 @@ function main() {
       flushVisualToCode();
       downloadHtml("index.html", editor.value);
       setStatus("Downloaded index.html");
+    }
+
+    if ((e.key === "o" || e.key === "O") && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      loadBtn.click();
     }
   });
 
