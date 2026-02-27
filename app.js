@@ -360,6 +360,7 @@ function main() {
   const preview = $("preview");
   const visual = $("visual");
   const visualFallback = $("visualFallback");
+  const selectionContext = $("selectionContext");
   const elementInspector = $("elementInspector");
   const inspectorToggleBtn = $("inspectorToggleBtn");
   const inspectorCloseBtn = $("inspectorCloseBtn");
@@ -486,6 +487,7 @@ function main() {
     inspectorToggleBtn.hidden = !visualOn;
     if (!visualOn) {
       closeInspector();
+      updateSelectionContext(null);
       state.inspectorTarget = null;
       state.inspectorAttached = false;
     }
@@ -751,7 +753,27 @@ function main() {
     else el.setAttribute(attrName, v);
   }
 
+  function updateSelectionContext(el) {
+    if (!el) {
+      selectionContext.textContent = "";
+      selectionContext.hidden = true;
+      inspectorToggleBtn.classList.remove("styling-fab--has-target");
+      return;
+    }
+    const tag = el.tagName.toLowerCase();
+    const id = el.getAttribute("id") || "";
+    const cls = el.getAttribute("class") || "";
+    const parts = [`<${tag}>`];
+    if (id) parts.push(`#${id}`);
+    if (cls) parts.push(`.${cls.split(/\s+/).filter(Boolean).join(".")}`);
+    selectionContext.textContent = parts.join(" ");
+    selectionContext.hidden = false;
+    inspectorToggleBtn.classList.add("styling-fab--has-target");
+  }
+
   function updateInspectorFromTarget(el) {
+    updateSelectionContext(el);
+
     if (!el) {
       inspectorTitle.textContent = "Advanced Styling";
       inspectorMeta.textContent = "Click in the visual editor to select an element";
