@@ -535,7 +535,7 @@ async function initTinyMCE({ onChange, shouldIgnoreChange, onUserEdit }) {
     font_family_formats:
       "System=system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;Arial=arial,helvetica,sans-serif;Georgia=georgia,palatino,serif;Times New Roman='Times New Roman',times,serif;Courier New='Courier New',courier,monospace",
     extended_valid_elements:
-      "span[data-html5-icon|data-html5-icon-text|data-html5-icon-pos|data-html5-icon-size|data-html5-icon-color|data-html5-icon-shape|data-html5-icon-bg|contenteditable|aria-hidden|style]",
+      "span[data-html5-icon|data-html5-icon-text|data-html5-icon-pos|data-html5-icon-size|data-html5-icon-color|data-html5-icon-shape|data-html5-icon-bg|data-html5-icon-border|contenteditable|aria-hidden|style]",
     setup: (ed) => {
       let ready = false;
       let lastHtml = null;
@@ -660,6 +660,8 @@ function main() {
   const insIconShape = $("insIconShape");
   const insIconBg = $("insIconBg");
   const insIconBgClear = $("insIconBgClear");
+  const insIconBorder = $("insIconBorder");
+  const insIconBorderClear = $("insIconBorderClear");
   const insIconRemove = $("insIconRemove");
   const insIconSearch = $("insIconSearch");
   const insIconGrid = $("insIconGrid");
@@ -876,7 +878,7 @@ function main() {
     delete el.dataset[restoreSet];
   }
 
-  function applyIconBadge(el, { text, pos, sizePx, color, shape, bgColor }) {
+  function applyIconBadge(el, { text, pos, sizePx, color, shape, bgColor, borderColor }) {
     const cleanText = String(text || "").trim();
     const cleanPos = pos === "tl" || pos === "ml" || pos === "bl" ? pos : "ml";
     const cleanSize = Number.isFinite(sizePx) && sizePx > 0 ? Math.round(sizePx) : 18;
@@ -884,6 +886,8 @@ function main() {
     const cleanShape = shape === "circle" || shape === "rounded" ? shape : "none";
     const hasShape = cleanShape !== "none";
     const cleanBg = normalizeColorToHex(bgColor) || (hasShape ? "#ffffff" : "");
+    // borderColor: explicit hex = use it, "none" = no border, undefined/null = inherit parent
+    const cleanBorder = borderColor === "none" ? "none" : (normalizeColorToHex(borderColor) || "");
 
     const existing = el.querySelector("[data-html5-icon='true']");
     if (!cleanText) {
@@ -918,6 +922,7 @@ function main() {
     badge.dataset.html5IconColor = cleanColor;
     badge.dataset.html5IconShape = cleanShape;
     badge.dataset.html5IconBg = cleanBg;
+    badge.dataset.html5IconBorder = cleanBorder;
     badge.style.color = cleanColor || "initial";
     badge.style.width = hasShape ? `${badgeTotal}px` : `${cleanSize}px`;
     badge.style.height = hasShape ? `${badgeTotal}px` : `${cleanSize}px`;
@@ -928,15 +933,20 @@ function main() {
     badge.style.borderRadius = cleanShape === "circle" ? "50%" : cleanShape === "rounded" ? "6px" : "";
     badge.style.backgroundColor = cleanBg || "";
 
-    // When shape is active, inherit border from the parent div
-    if (hasShape) {
-      badge.style.borderWidth = cs.borderLeftWidth || cs.borderWidth || "";
-      badge.style.borderStyle = cs.borderLeftStyle || cs.borderStyle || "";
-      badge.style.borderColor = cs.borderLeftColor || cs.borderColor || "";
-    } else {
+    // Badge border: explicit color, inherit from parent, or none
+    if (!hasShape || cleanBorder === "none") {
       badge.style.borderWidth = "";
       badge.style.borderStyle = "";
       badge.style.borderColor = "";
+    } else if (cleanBorder) {
+      badge.style.borderWidth = cs.borderLeftWidth || cs.borderWidth || "1px";
+      badge.style.borderStyle = cs.borderLeftStyle || cs.borderStyle || "solid";
+      badge.style.borderColor = cleanBorder;
+    } else {
+      // Inherit from parent div
+      badge.style.borderWidth = cs.borderLeftWidth || cs.borderWidth || "";
+      badge.style.borderStyle = cs.borderLeftStyle || cs.borderStyle || "";
+      badge.style.borderColor = cs.borderLeftColor || cs.borderColor || "";
     }
 
     // Position relative to the left border; keep icon centered on the border edge.
@@ -953,14 +963,15 @@ function main() {
 
   function readIconBadge(el) {
     const badge = el.querySelector("[data-html5-icon='true']");
-    if (!badge) return { text: "", pos: "ml", size: 18, color: "", shape: "none", bgColor: "" };
+    if (!badge) return { text: "", pos: "ml", size: 18, color: "", shape: "none", bgColor: "", borderColor: "" };
     const text = badge.dataset.html5IconText || badge.textContent || "";
     const pos = badge.dataset.html5IconPos || "ml";
     const size = Number.parseInt(badge.dataset.html5IconSize || "18", 10);
     const color = badge.dataset.html5IconColor || "";
     const shape = badge.dataset.html5IconShape || "none";
     const bgColor = badge.dataset.html5IconBg || "";
-    return { text, pos, size: Number.isFinite(size) ? size : 18, color, shape, bgColor };
+    const borderColor = badge.dataset.html5IconBorder || "";
+    return { text, pos, size: Number.isFinite(size) ? size : 18, color, shape, bgColor, borderColor };
   }
 
   // ── Box Presets ──
@@ -1258,6 +1269,17 @@ function main() {
     insIconShape.value = icon.shape || "none";
     setColorControl(insIconBg, insIconBgClear, icon.bgColor);
     insIconBgClear.disabled = !icon.bgColor;
+    // Show the actual badge border color in the control
+    let borderVal = icon.borderColor;
+    if (borderVal === "none") {
+      borderVal = "";
+    } else if (!borderVal && icon.text) {
+      // No explicit border stored — read the badge's actual border color
+      const badge = el.querySelector("[data-html5-icon='true']");
+      if (badge) borderVal = normalizeColorToHex(badge.style.borderColor) || "";
+    }
+    setColorControl(insIconBorder, insIconBorderClear, borderVal);
+    insIconBorderClear.disabled = !borderVal;
     const hasIcon = Boolean(String(icon.text || "").trim());
     insIconRemove.disabled = !hasIcon;
     insIconPos.disabled = !hasIcon;
@@ -1267,6 +1289,8 @@ function main() {
     insIconShape.disabled = !hasIcon;
     insIconBg.disabled = !hasIcon;
     insIconBgClear.disabled = !hasIcon || !icon.bgColor;
+    insIconBorder.disabled = !hasIcon;
+    insIconBorderClear.disabled = !hasIcon || !borderVal;
 
     insBoxPreset.value = "";
 
@@ -1301,6 +1325,8 @@ function main() {
       insIconShape,
       insIconBg,
       insIconBgClear,
+      insIconBorder,
+      insIconBorderClear,
       insIconRemove,
       insBoxPreset,
     ];
@@ -1329,6 +1355,8 @@ function main() {
     insIconShape.disabled = !hasIcon;
     insIconBg.disabled = !hasIcon;
     insIconBgClear.disabled = !hasIcon;
+    insIconBorder.disabled = !hasIcon;
+    insIconBorderClear.disabled = !hasIcon;
 
     ed.undoManager.transact(() => {
       setOrRemoveAttr(el, "id", insId.value);
@@ -1379,6 +1407,7 @@ function main() {
         color: getColorControlValue(insIconColor),
         shape: insIconShape.value,
         bgColor: getColorControlValue(insIconBg),
+        borderColor: insIconBorder.dataset.unset === "true" ? "none" : insIconBorder.value,
       });
     });
 
@@ -1538,6 +1567,7 @@ function main() {
     wireColorClear(insBorderColor, insBorderColorClear, onAny);
     wireColorClear(insIconColor, insIconColorClear, onAny);
     wireColorClear(insIconBg, insIconBgClear, onAny);
+    wireColorClear(insIconBorder, insIconBorderClear, onAny);
 
     insBgImageClear.addEventListener("click", () => {
       insBgImage.value = "";
