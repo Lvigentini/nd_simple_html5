@@ -320,7 +320,6 @@
                   title="Unicode icon (character/emoji)"
                 />
               </label>
-
               <label class="iconctl__item">
                 <span class="iconctl__label">Position</span>
                 <select id="insIconPos" class="field__select" title="Icon position">
@@ -329,7 +328,6 @@
                   <option value="bl">Bottom-left</option>
                 </select>
               </label>
-
               <label class="iconctl__item">
                 <span class="iconctl__label">Size</span>
                 <input
@@ -343,12 +341,35 @@
                   title="Icon size (px)"
                 />
               </label>
-
+            </div>
+            <div class="iconctl__shape">
+              <label class="iconctl__item">
+                <span class="iconctl__label">Shape</span>
+                <select id="insIconShape" class="field__select" title="Badge shape">
+                  <option value="none">None</option>
+                  <option value="circle">Circle</option>
+                  <option value="rounded">Rounded</option>
+                </select>
+              </label>
               <label class="iconctl__item">
                 <span class="iconctl__label">Color</span>
                 <input id="insIconColor" class="color" type="color" value="#111827" title="Icon color" />
               </label>
-
+              <label class="iconctl__item">
+                <span class="iconctl__label">BG</span>
+                <div class="field__row">
+                  <input id="insIconBg" class="color" type="color" value="#dbeafe" title="Badge background" />
+                  <button
+                    id="insIconBgClear"
+                    type="button"
+                    class="btn btn--small btn--icon btn--ghost"
+                    title="Clear badge background"
+                    aria-label="Clear badge background"
+                  >
+                    <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+                  </button>
+                </div>
+              </label>
               <button
                 id="insIconRemove"
                 type="button"
@@ -359,13 +380,14 @@
                 <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
               </button>
             </div>
-            <div class="iconctl__samples" aria-label="Icon samples">
-              Try:
-              <button type="button" class="chip" data-icon-sample="ℹ">ℹ</button>
-              <button type="button" class="chip" data-icon-sample="⚠">⚠</button>
-              <button type="button" class="chip" data-icon-sample="✓">✓</button>
-              <button type="button" class="chip" data-icon-sample="★">★</button>
-              <button type="button" class="chip" data-icon-sample="➤">➤</button>
+            <div class="iconctl__picker">
+              <input
+                id="insIconSearch"
+                class="field__input iconctl__search"
+                type="text"
+                placeholder="Search icons…"
+              />
+              <div id="insIconGrid" class="iconctl__grid"></div>
             </div>
           </div>
 

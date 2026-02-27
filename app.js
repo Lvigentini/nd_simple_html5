@@ -12,7 +12,7 @@ const STORAGE_KEYS = {
   inspectorOpen: "html5-editor:inspectorOpen",
 };
 
-const APP_VERSION = "0.3.9";
+const APP_VERSION = "0.4.0";
 
 const TIMING = {
   debounceMs: 120,
@@ -39,7 +39,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "ℹ", pos: "ml", sizePx: 18, color: "#3b82f6" },
+    icon: { text: "ℹ", pos: "ml", sizePx: 18, color: "#3b82f6", shape: "circle", bgColor: "#dbeafe" },
   },
   warning: {
     label: "Warning",
@@ -52,7 +52,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "⚠", pos: "ml", sizePx: 18, color: "#d97706" },
+    icon: { text: "⚠", pos: "ml", sizePx: 18, color: "#d97706", shape: "circle", bgColor: "#fef3c7" },
   },
   success: {
     label: "Success",
@@ -65,7 +65,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "✓", pos: "ml", sizePx: 18, color: "#16a34a" },
+    icon: { text: "✓", pos: "ml", sizePx: 18, color: "#16a34a", shape: "circle", bgColor: "#dcfce7" },
   },
   danger: {
     label: "Danger",
@@ -78,7 +78,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "✕", pos: "ml", sizePx: 18, color: "#dc2626" },
+    icon: { text: "✕", pos: "ml", sizePx: 18, color: "#dc2626", shape: "circle", bgColor: "#fee2e2" },
   },
 
   // ── Cards ──
@@ -140,7 +140,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "📋", pos: "ml", sizePx: 18, color: "#b45309" },
+    icon: { text: "📋", pos: "ml", sizePx: 18, color: "#b45309", shape: "rounded", bgColor: "#fef3c7" },
   },
   activity: {
     label: "Activity",
@@ -153,7 +153,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "🔧", pos: "ml", sizePx: 18, color: "#2563eb" },
+    icon: { text: "🔧", pos: "ml", sizePx: 18, color: "#2563eb", shape: "rounded", bgColor: "#dbeafe" },
   },
   keyConcept: {
     label: "Key Concept",
@@ -166,7 +166,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "💡", pos: "ml", sizePx: 18, color: "#7c3aed" },
+    icon: { text: "💡", pos: "ml", sizePx: 18, color: "#7c3aed", shape: "rounded", bgColor: "#ede9fe" },
   },
   quote: {
     label: "Quote",
@@ -180,7 +180,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "❝", pos: "tl", sizePx: 20, color: "#6b7280" },
+    icon: { text: "❝", pos: "tl", sizePx: 20, color: "#6b7280", shape: "rounded", bgColor: "#f3f4f6" },
   },
   definition: {
     label: "Definition",
@@ -193,9 +193,100 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "📖", pos: "ml", sizePx: 18, color: "#0d9488" },
+    icon: { text: "📖", pos: "ml", sizePx: 18, color: "#0d9488", shape: "rounded", bgColor: "#ccfbf1" },
   },
 };
+
+const ICON_PALETTE = [
+  // Status / Alerts
+  { char: "ℹ", kw: "info information" },
+  { char: "⚠", kw: "warning alert caution" },
+  { char: "✓", kw: "check tick success done" },
+  { char: "✕", kw: "cross close remove delete" },
+  { char: "⚡", kw: "bolt lightning power energy" },
+  { char: "⛔", kw: "stop forbidden prohibited" },
+  { char: "✅", kw: "check success complete yes" },
+  { char: "❌", kw: "cross error fail no" },
+  { char: "🔴", kw: "red circle dot status" },
+  { char: "🟢", kw: "green circle dot status" },
+  { char: "🟡", kw: "yellow circle dot status" },
+  // Academic
+  { char: "📋", kw: "clipboard task list checklist" },
+  { char: "📖", kw: "book open read study" },
+  { char: "💡", kw: "idea lightbulb concept tip" },
+  { char: "📝", kw: "memo note write edit" },
+  { char: "🎓", kw: "graduation cap academic degree" },
+  { char: "📚", kw: "books library stack study" },
+  { char: "🔬", kw: "microscope science research lab" },
+  { char: "📐", kw: "ruler triangle math geometry" },
+  { char: "✏️", kw: "pencil edit write draw" },
+  { char: "📊", kw: "chart bar graph data statistics" },
+  { char: "🧪", kw: "test tube experiment science lab" },
+  { char: "🎯", kw: "target goal aim objective" },
+  { char: "📌", kw: "pin pushpin important pinned" },
+  { char: "🗂️", kw: "dividers tabs files organize" },
+  { char: "📎", kw: "paperclip attach clip" },
+  // Objects
+  { char: "🔧", kw: "wrench tool fix repair settings" },
+  { char: "⚙️", kw: "gear cog settings config" },
+  { char: "🔑", kw: "key access unlock password" },
+  { char: "🔒", kw: "lock secure private closed" },
+  { char: "🔗", kw: "link chain connect url" },
+  { char: "💾", kw: "floppy disk save storage" },
+  { char: "📁", kw: "folder directory file" },
+  { char: "📂", kw: "folder open directory file" },
+  { char: "🗑️", kw: "trash bin delete waste" },
+  { char: "📤", kw: "outbox upload send export" },
+  { char: "📥", kw: "inbox download receive import" },
+  { char: "🖨️", kw: "printer print output" },
+  { char: "💻", kw: "laptop computer device code" },
+  { char: "🔔", kw: "bell notification alert alarm" },
+  { char: "📅", kw: "calendar date schedule event" },
+  // Arrows
+  { char: "➤", kw: "arrow right pointer forward" },
+  { char: "➜", kw: "arrow right forward go" },
+  { char: "↗", kw: "arrow up right diagonal" },
+  { char: "↘", kw: "arrow down right diagonal" },
+  { char: "◀", kw: "arrow left triangle back" },
+  { char: "▶", kw: "arrow right triangle play" },
+  { char: "▲", kw: "arrow up triangle" },
+  { char: "▼", kw: "arrow down triangle" },
+  { char: "↩", kw: "arrow return back undo reply" },
+  { char: "↪", kw: "arrow forward redo" },
+  // People / Communication
+  { char: "👤", kw: "person user profile avatar" },
+  { char: "👥", kw: "people group team users" },
+  { char: "💬", kw: "speech bubble chat talk comment" },
+  { char: "💭", kw: "thought bubble think idea" },
+  { char: "✉️", kw: "envelope mail email letter" },
+  { char: "📞", kw: "phone call telephone" },
+  { char: "🤝", kw: "handshake deal agreement partner" },
+  { char: "👋", kw: "wave hello hi greet" },
+  // Symbols
+  { char: "★", kw: "star favourite rating" },
+  { char: "♥", kw: "heart love like" },
+  { char: "♦", kw: "diamond suit card" },
+  { char: "♣", kw: "club suit card" },
+  { char: "♠", kw: "spade suit card" },
+  { char: "∞", kw: "infinity forever loop" },
+  { char: "§", kw: "section law legal paragraph" },
+  { char: "¶", kw: "pilcrow paragraph mark" },
+  { char: "©", kw: "copyright intellectual property" },
+  { char: "®", kw: "registered trademark" },
+  { char: "❝", kw: "quote quotation open" },
+  { char: "❞", kw: "quote quotation close" },
+  // Nature / Misc
+  { char: "🌐", kw: "globe world web internet" },
+  { char: "🌍", kw: "earth globe world africa europe" },
+  { char: "🏠", kw: "house home building" },
+  { char: "🏢", kw: "office building business corporate" },
+  { char: "🚀", kw: "rocket launch start deploy" },
+  { char: "⏱️", kw: "timer stopwatch time clock" },
+  { char: "🔥", kw: "fire hot popular trending" },
+  { char: "💧", kw: "water drop liquid" },
+  { char: "🌱", kw: "seedling plant grow growth" },
+  { char: "☀️", kw: "sun bright light day" },
+];
 
 const DEFAULT_TEMPLATE = `<!doctype html>
 <html lang="en">
@@ -565,7 +656,12 @@ function main() {
   const insIconPos = $("insIconPos");
   const insIconSize = $("insIconSize");
   const insIconColor = $("insIconColor");
+  const insIconShape = $("insIconShape");
+  const insIconBg = $("insIconBg");
+  const insIconBgClear = $("insIconBgClear");
   const insIconRemove = $("insIconRemove");
+  const insIconSearch = $("insIconSearch");
+  const insIconGrid = $("insIconGrid");
   const insBoxPreset = $("insBoxPreset");
 
   $("versionPill").textContent = `v${APP_VERSION}`;
@@ -777,11 +873,13 @@ function main() {
     delete el.dataset[restoreSet];
   }
 
-  function applyIconBadge(el, { text, pos, sizePx, color }) {
+  function applyIconBadge(el, { text, pos, sizePx, color, shape, bgColor }) {
     const cleanText = String(text || "").trim();
     const cleanPos = pos === "tl" || pos === "ml" || pos === "bl" ? pos : "ml";
     const cleanSize = Number.isFinite(sizePx) && sizePx > 0 ? Math.round(sizePx) : 18;
     const cleanColor = normalizeColorToHex(color) || "#111827";
+    const cleanShape = shape === "circle" || shape === "rounded" ? shape : "none";
+    const cleanBg = normalizeColorToHex(bgColor) || "";
 
     const existing = el.querySelector("[data-html5-icon='true']");
     if (!cleanText) {
@@ -801,7 +899,10 @@ function main() {
       setInlineStyleWithRestore(el, "margin-left", requiredMarginLeft, "MarginLeft");
     }
 
-    const requiredPaddingLeft = cleanSize + 18;
+    const hasBg = cleanShape !== "none" && cleanBg;
+    const bgPad = hasBg ? Math.round(cleanSize * 0.2) : 0;
+    const badgeTotal = cleanSize + bgPad * 2;
+    const requiredPaddingLeft = badgeTotal + 18;
     const computedPaddingLeft = getNumericPx(cs.paddingLeft) ?? 0;
     if (computedPaddingLeft < requiredPaddingLeft) {
       setInlineStyleWithRestore(el, "padding-left", requiredPaddingLeft, "PaddingLeft");
@@ -812,12 +913,17 @@ function main() {
     badge.dataset.html5IconPos = cleanPos;
     badge.dataset.html5IconSize = String(cleanSize);
     badge.dataset.html5IconColor = cleanColor;
+    badge.dataset.html5IconShape = cleanShape;
+    badge.dataset.html5IconBg = cleanBg;
     badge.style.color = cleanColor;
-    badge.style.width = `${cleanSize}px`;
-    badge.style.height = `${cleanSize}px`;
+    badge.style.width = hasBg ? `${badgeTotal}px` : `${cleanSize}px`;
+    badge.style.height = hasBg ? `${badgeTotal}px` : `${cleanSize}px`;
     badge.style.fontSize = `${cleanSize}px`;
     badge.style.fontFamily =
       "'Segoe UI Symbol', 'Apple Color Emoji', 'Segoe UI Emoji', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif";
+
+    badge.style.borderRadius = cleanShape === "circle" ? "50%" : cleanShape === "rounded" ? "6px" : "";
+    badge.style.backgroundColor = hasBg ? cleanBg : "";
 
     // Position relative to the left border; keep icon centered on the border edge.
     badge.style.top = "";
@@ -833,12 +939,14 @@ function main() {
 
   function readIconBadge(el) {
     const badge = el.querySelector("[data-html5-icon='true']");
-    if (!badge) return { text: "", pos: "ml", size: 18, color: "#111827" };
+    if (!badge) return { text: "", pos: "ml", size: 18, color: "#111827", shape: "none", bgColor: "" };
     const text = badge.dataset.html5IconText || badge.textContent || "";
     const pos = badge.dataset.html5IconPos || "ml";
     const size = Number.parseInt(badge.dataset.html5IconSize || "18", 10);
     const color = badge.dataset.html5IconColor || "#111827";
-    return { text, pos, size: Number.isFinite(size) ? size : 18, color };
+    const shape = badge.dataset.html5IconShape || "none";
+    const bgColor = badge.dataset.html5IconBg || "";
+    return { text, pos, size: Number.isFinite(size) ? size : 18, color, shape, bgColor };
   }
 
   // ── Box Presets ──
@@ -947,6 +1055,20 @@ function main() {
   }
 
   populateBoxPresetDropdown();
+
+  function populateIconGrid() {
+    insIconGrid.innerHTML = "";
+    for (const { char, kw } of ICON_PALETTE) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "chip";
+      btn.dataset.iconSample = char;
+      btn.dataset.iconKw = kw;
+      btn.textContent = char;
+      btn.title = kw.split(" ").slice(0, 3).join(", ");
+      insIconGrid.appendChild(btn);
+    }
+  }
 
   function setColorControl(input, clearBtn, cssValue) {
     const hex = normalizeColorToHex(cssValue);
@@ -1118,11 +1240,17 @@ function main() {
     insIconPos.value = icon.pos;
     insIconSize.value = String(icon.size);
     insIconColor.value = normalizeColorToHex(icon.color) || "#111827";
+    insIconShape.value = icon.shape || "none";
+    setColorControl(insIconBg, insIconBgClear, icon.bgColor);
+    insIconBgClear.disabled = !icon.bgColor;
     const hasIcon = Boolean(String(icon.text || "").trim());
     insIconRemove.disabled = !hasIcon;
     insIconPos.disabled = !hasIcon;
     insIconSize.disabled = !hasIcon;
     insIconColor.disabled = !hasIcon;
+    insIconShape.disabled = !hasIcon;
+    insIconBg.disabled = !hasIcon;
+    insIconBgClear.disabled = !hasIcon || !icon.bgColor;
 
     insBoxPreset.value = "";
 
@@ -1153,6 +1281,9 @@ function main() {
       insIconPos,
       insIconSize,
       insIconColor,
+      insIconShape,
+      insIconBg,
+      insIconBgClear,
       insIconRemove,
       insBoxPreset,
     ];
@@ -1177,6 +1308,9 @@ function main() {
     insIconPos.disabled = !hasIcon;
     insIconSize.disabled = !hasIcon;
     insIconColor.disabled = !hasIcon;
+    insIconShape.disabled = !hasIcon;
+    insIconBg.disabled = !hasIcon;
+    insIconBgClear.disabled = !hasIcon;
 
     ed.undoManager.transact(() => {
       setOrRemoveAttr(el, "id", insId.value);
@@ -1216,6 +1350,8 @@ function main() {
         pos: String(insIconPos.value || "").trim(),
         sizePx: insIconSize.value === "" ? 18 : Number(insIconSize.value),
         color: insIconColor.value,
+        shape: insIconShape.value,
+        bgColor: getColorControlValue(insIconBg),
       });
     });
 
@@ -1365,6 +1501,7 @@ function main() {
     insIconPos.addEventListener("change", onAny);
     insIconSize.addEventListener("change", onAny);
     insIconColor.addEventListener("input", onAny);
+    insIconShape.addEventListener("change", onAny);
     insIconRemove.addEventListener("click", () => {
       insIconText.value = "";
       onAny();
@@ -1373,6 +1510,7 @@ function main() {
     wireColorClear(insColor, insColorClear, onAny);
     wireColorClear(insBg, insBgClear, onAny);
     wireColorClear(insBorderColor, insBorderColorClear, onAny);
+    wireColorClear(insIconBg, insIconBgClear, onAny);
 
     insBgImageClear.addEventListener("click", () => {
       insBgImage.value = "";
@@ -1387,12 +1525,21 @@ function main() {
     insTargetSelected.addEventListener("click", () => setInspectorTargetMode("selected"));
     insTargetContainer.addEventListener("click", () => setInspectorTargetMode("container"));
 
-    document.querySelectorAll("[data-icon-sample]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const v = btn.getAttribute("data-icon-sample") || "";
-        insIconText.value = v;
-        applyInspectorDebounced();
-      });
+    // Icon picker grid
+    populateIconGrid();
+    insIconSearch.addEventListener("input", () => {
+      const q = insIconSearch.value.trim().toLowerCase();
+      for (const btn of insIconGrid.children) {
+        if (!q) { btn.hidden = false; continue; }
+        const kw = (btn.dataset.iconKw || "") + " " + (btn.dataset.iconSample || "");
+        btn.hidden = !kw.toLowerCase().includes(q);
+      }
+    });
+    insIconGrid.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-icon-sample]");
+      if (!btn) return;
+      insIconText.value = btn.dataset.iconSample || "";
+      applyInspectorDebounced();
     });
   }
 
