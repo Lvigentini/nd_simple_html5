@@ -450,9 +450,9 @@ function replaceBodyInnerHtml(fullHtml, newBodyInnerHtml) {
     const nextBody = String(newBodyInnerHtml || "");
     const bounds = findBodyBounds(fullHtml);
     if (bounds) return bounds.html.slice(0, bounds.openEnd) + nextBody + bounds.html.slice(bounds.closeIdx);
-    const doc = parseHtmlDocument(fullHtml);
-    if (doc.body) doc.body.innerHTML = nextBody;
-    return `<!doctype html>\n${doc.documentElement.outerHTML}`;
+    // No <body> tag in the source — the user is editing a fragment, so
+    // return the body content directly instead of wrapping in a full document.
+    return nextBody;
   } catch {
     return fullHtml;
   }
