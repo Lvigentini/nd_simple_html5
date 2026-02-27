@@ -12,7 +12,7 @@ const STORAGE_KEYS = {
   inspectorOpen: "html5-editor:inspectorOpen",
 };
 
-const APP_VERSION = "0.4.0";
+const APP_VERSION = "0.4.1";
 
 const TIMING = {
   debounceMs: 120,
@@ -1642,12 +1642,23 @@ function main() {
     updateInspectorFromTarget(null);
   }
 
+  function getVisualBodyHtml(ed) {
+    // Read the TinyMCE body DOM directly to bypass the TinyMCE serializer
+    // which can strip badge spans, data attributes, or contenteditable elements.
+    const raw = ed.getBody().innerHTML;
+    // Clean up TinyMCE internal artifacts
+    return raw
+      .replace(/\s*data-mce-[a-z-]+="[^"]*"/gi, "")
+      .replace(/\s*data-mce-[a-z-]+='[^']*'/gi, "")
+      .replace(/<br\s+data-mce-bogus="1"\s*\/?>/gi, "");
+  }
+
   function syncCodeFromVisual(ed, { silent = false } = {}) {
     if (state.applyingToVisual) return;
     if (!state.visualCanWriteCode) return;
     if (!ed) return;
     debugLog("visual->code sync");
-    const body = ed.getContent({ format: "html" });
+    const body = getVisualBodyHtml(ed);
     const nextFull = replaceBodyInnerHtml(editor.value, body);
     state.applyingFromVisual = true;
     setEditorValue(nextFull, { preserveIfNotFocused: true });
@@ -1697,7 +1708,7 @@ function main() {
     syncTinyMCEHeadCss(ed, editor.value, headCss);
 
     const body = extractBodyInnerHtml(editor.value);
-    if (!force && ed.getContent({ format: "html" }) === body) return true;
+    if (!force && getVisualBodyHtml(ed) === body) return true;
 
     state.applyingToVisual = true;
     state.ignoreVisualSyncUntil = performance.now() + TIMING.syncIgnoreWindowMs;
