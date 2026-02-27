@@ -805,9 +805,11 @@ function main() {
 
   function rgbToHex(rgb) {
     const m = String(rgb || "").match(
-      /^rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*[\d.]+)?\s*\)$/i,
+      /^rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\s*\)$/i,
     );
     if (!m) return null;
+    const alpha = m[4] !== undefined ? Number(m[4]) : 1;
+    if (alpha === 0) return null;
     const r = Number(m[1]);
     const g = Number(m[2]);
     const b = Number(m[3]);
@@ -921,7 +923,7 @@ function main() {
     badge.style.height = hasShape ? `${badgeTotal}px` : `${cleanSize}px`;
     badge.style.fontSize = `${cleanSize}px`;
     badge.style.fontFamily =
-      "'Segoe UI Symbol', 'Apple Color Emoji', 'Segoe UI Emoji', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif";
+      "'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Segoe UI Symbol', system-ui, sans-serif";
 
     badge.style.borderRadius = cleanShape === "circle" ? "50%" : cleanShape === "rounded" ? "6px" : "";
     badge.style.backgroundColor = cleanBg || "";
@@ -1342,10 +1344,19 @@ function main() {
 
       setStyleProp(el, "display", display);
 
-      const bw = insBorderW.value === "" ? null : `${Number(insBorderW.value)}px`;
-      setStyleProp(el, "border-width", bw);
-      setStyleProp(el, "border-style", insBorderStyle.value);
-      setStyleProp(el, "border-color", getColorControlValue(insBorderColor));
+      // Only write border shorthand properties when explicitly set by the user.
+      // Removing them (null) would clear side-specific borders like border-left
+      // applied by presets.
+      if (insBorderW.value !== "") {
+        setStyleProp(el, "border-width", `${Number(insBorderW.value)}px`);
+      }
+      if (insBorderStyle.value !== "") {
+        setStyleProp(el, "border-style", insBorderStyle.value);
+      }
+      const bc = getColorControlValue(insBorderColor);
+      if (bc !== null) {
+        setStyleProp(el, "border-color", bc);
+      }
 
       if (display === "grid") {
         const cols = insGridCols.value === "" ? null : Number(insGridCols.value);
