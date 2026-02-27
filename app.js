@@ -12,7 +12,7 @@ const STORAGE_KEYS = {
   inspectorOpen: "html5-editor:inspectorOpen",
 };
 
-const APP_VERSION = "0.3.8";
+const APP_VERSION = "0.3.9";
 
 const TIMING = {
   debounceMs: 120,
@@ -24,6 +24,177 @@ const LAYOUT = {
   minPaneWidthPx: 320,
   minPaneTopPx: 160,
   minPaneBottomPx: 260,
+};
+
+const BOX_PRESETS = {
+  // ── Callouts ──
+  info: {
+    label: "Info",
+    category: "Callouts",
+    styles: {
+      "border-left": "4px solid #3b82f6",
+      "background-color": "#eff6ff",
+      color: "#1e3a5f",
+      padding: "16px",
+      "border-radius": "8px",
+      "margin-bottom": "12px",
+    },
+    icon: { text: "ℹ", pos: "ml", sizePx: 18, color: "#3b82f6" },
+  },
+  warning: {
+    label: "Warning",
+    category: "Callouts",
+    styles: {
+      "border-left": "4px solid #f59e0b",
+      "background-color": "#fffbeb",
+      color: "#78350f",
+      padding: "16px",
+      "border-radius": "8px",
+      "margin-bottom": "12px",
+    },
+    icon: { text: "⚠", pos: "ml", sizePx: 18, color: "#d97706" },
+  },
+  success: {
+    label: "Success",
+    category: "Callouts",
+    styles: {
+      "border-left": "4px solid #22c55e",
+      "background-color": "#f0fdf4",
+      color: "#14532d",
+      padding: "16px",
+      "border-radius": "8px",
+      "margin-bottom": "12px",
+    },
+    icon: { text: "✓", pos: "ml", sizePx: 18, color: "#16a34a" },
+  },
+  danger: {
+    label: "Danger",
+    category: "Callouts",
+    styles: {
+      "border-left": "4px solid #ef4444",
+      "background-color": "#fef2f2",
+      color: "#7f1d1d",
+      padding: "16px",
+      "border-radius": "8px",
+      "margin-bottom": "12px",
+    },
+    icon: { text: "✕", pos: "ml", sizePx: 18, color: "#dc2626" },
+  },
+
+  // ── Cards ──
+  card: {
+    label: "Card",
+    category: "Cards",
+    styles: {
+      "background-color": "#ffffff",
+      border: "1px solid #e5e7eb",
+      "border-radius": "8px",
+      padding: "16px",
+      "margin-bottom": "12px",
+      "box-shadow": "0 1px 3px rgba(0,0,0,0.1)",
+    },
+  },
+  bordered: {
+    label: "Bordered frame",
+    category: "Cards",
+    styles: {
+      "background-color": "#ffffff",
+      border: "2px solid #d1d5db",
+      "border-radius": "8px",
+      padding: "16px",
+      "margin-bottom": "12px",
+    },
+  },
+  shadow: {
+    label: "Shadow card",
+    category: "Cards",
+    styles: {
+      "background-color": "#ffffff",
+      "border-radius": "8px",
+      padding: "16px",
+      "margin-bottom": "12px",
+      "box-shadow": "0 4px 16px rgba(0,0,0,0.12)",
+    },
+  },
+  outlined: {
+    label: "Outlined",
+    category: "Cards",
+    styles: {
+      "background-color": "#ffffff",
+      border: "2px dashed #9ca3af",
+      "border-radius": "8px",
+      padding: "16px",
+      "margin-bottom": "12px",
+    },
+  },
+
+  // ── Academic ──
+  learningTask: {
+    label: "Learning Task",
+    category: "Academic",
+    styles: {
+      "border-left": "4px solid #f59e0b",
+      "background-color": "#fffbeb",
+      color: "#78350f",
+      padding: "16px",
+      "border-radius": "8px",
+      "margin-bottom": "12px",
+    },
+    icon: { text: "📋", pos: "ml", sizePx: 18, color: "#b45309" },
+  },
+  activity: {
+    label: "Activity",
+    category: "Academic",
+    styles: {
+      "border-left": "4px solid #3b82f6",
+      "background-color": "#eff6ff",
+      color: "#1e3a5f",
+      padding: "16px",
+      "border-radius": "8px",
+      "margin-bottom": "12px",
+    },
+    icon: { text: "🔧", pos: "ml", sizePx: 18, color: "#2563eb" },
+  },
+  keyConcept: {
+    label: "Key Concept",
+    category: "Academic",
+    styles: {
+      "border-left": "4px solid #8b5cf6",
+      "background-color": "#f5f3ff",
+      color: "#3b0764",
+      padding: "16px",
+      "border-radius": "8px",
+      "margin-bottom": "12px",
+    },
+    icon: { text: "💡", pos: "ml", sizePx: 18, color: "#7c3aed" },
+  },
+  quote: {
+    label: "Quote",
+    category: "Academic",
+    styles: {
+      "border-left": "4px solid #9ca3af",
+      "background-color": "#f9fafb",
+      color: "#374151",
+      "font-style": "italic",
+      padding: "16px",
+      "border-radius": "8px",
+      "margin-bottom": "12px",
+    },
+    icon: { text: "❝", pos: "tl", sizePx: 20, color: "#6b7280" },
+  },
+  definition: {
+    label: "Definition",
+    category: "Academic",
+    styles: {
+      "border-left": "4px solid #14b8a6",
+      "background-color": "#f0fdfa",
+      color: "#134e4a",
+      padding: "16px",
+      "border-radius": "8px",
+      "margin-bottom": "12px",
+    },
+    icon: { text: "📖", pos: "ml", sizePx: 18, color: "#0d9488" },
+  },
 };
 
 const DEFAULT_TEMPLATE = `<!doctype html>
@@ -395,6 +566,7 @@ function main() {
   const insIconSize = $("insIconSize");
   const insIconColor = $("insIconColor");
   const insIconRemove = $("insIconRemove");
+  const insBoxPreset = $("insBoxPreset");
 
   $("versionPill").textContent = `v${APP_VERSION}`;
 
@@ -669,6 +841,113 @@ function main() {
     return { text, pos, size: Number.isFinite(size) ? size : 18, color };
   }
 
+  // ── Box Presets ──
+
+  function populateBoxPresetDropdown() {
+    insBoxPreset.innerHTML = "";
+    const defaultOpt = document.createElement("option");
+    defaultOpt.value = "";
+    defaultOpt.textContent = "— Custom —";
+    insBoxPreset.appendChild(defaultOpt);
+
+    const categories = {};
+    for (const [key, preset] of Object.entries(BOX_PRESETS)) {
+      const cat = preset.category || "Other";
+      if (!categories[cat]) categories[cat] = [];
+      categories[cat].push({ key, label: preset.label });
+    }
+    for (const [cat, items] of Object.entries(categories)) {
+      const group = document.createElement("optgroup");
+      group.label = cat;
+      for (const { key, label } of items) {
+        const opt = document.createElement("option");
+        opt.value = key;
+        opt.textContent = label;
+        group.appendChild(opt);
+      }
+      insBoxPreset.appendChild(group);
+    }
+  }
+
+  function wrapSelectionInDiv(ed) {
+    const body = ed.getBody();
+    const node = ed.selection.getNode();
+    if (!node || node === body) {
+      const content = ed.selection.getContent({ format: "html" }) || "";
+      const div = ed.dom.create("div", {}, content || "<p>&nbsp;</p>");
+      ed.selection.setContent(div.outerHTML);
+      const inserted = body.querySelector("div:last-of-type");
+      if (inserted) ed.selection.select(inserted);
+      return inserted || null;
+    }
+    let el = node.nodeType === 3 ? node.parentElement : node;
+    if (!el || el.nodeType !== 1) return null;
+    if (el.tagName === "DIV") return el;
+    const wrapper = ed.dom.create("div");
+    el.parentNode.insertBefore(wrapper, el);
+    wrapper.appendChild(el);
+    ed.selection.select(wrapper);
+    return wrapper;
+  }
+
+  const BOX_STYLE_PROPS = [
+    "border-left",
+    "border",
+    "border-width",
+    "border-style",
+    "border-color",
+    "background-color",
+    "color",
+    "padding",
+    "border-radius",
+    "margin-bottom",
+    "box-shadow",
+    "font-style",
+  ];
+
+  function applyBoxPreset(presetKey) {
+    if (!presetKey) return;
+    const preset = BOX_PRESETS[presetKey];
+    if (!preset) return;
+    if (!isWysiwygEnabled()) return;
+    const ed = getTinyMCEEditor();
+    if (!ed) return;
+
+    let el = state.inspectorTarget;
+    if (!el || !ed.getBody().contains(el)) {
+      el = wrapSelectionInDiv(ed);
+    }
+    if (!el) return;
+
+    if (el.tagName !== "DIV") {
+      const wrapper = wrapSelectionInDiv(ed);
+      if (wrapper) el = wrapper;
+    }
+
+    ed.undoManager.transact(() => {
+      for (const prop of BOX_STYLE_PROPS) {
+        setStyleProp(el, prop, null);
+      }
+      for (const [prop, value] of Object.entries(preset.styles)) {
+        setStyleProp(el, prop, value);
+      }
+      if (preset.icon) {
+        applyIconBadge(el, preset.icon);
+      } else {
+        applyIconBadge(el, { text: "", pos: "ml", sizePx: 18, color: "#111827" });
+      }
+    });
+
+    state.inspectorTarget = el;
+    ed.nodeChanged();
+    state.visualCanWriteCode = true;
+    syncCodeFromVisual(ed, { silent: true });
+    updateInspectorFromTarget(el);
+    setStatus(`Applied: ${preset.label}`);
+  }
+
+  populateBoxPresetDropdown();
+
   function setColorControl(input, clearBtn, cssValue) {
     const hex = normalizeColorToHex(cssValue);
     if (!hex) {
@@ -845,6 +1124,8 @@ function main() {
     insIconSize.disabled = !hasIcon;
     insIconColor.disabled = !hasIcon;
 
+    insBoxPreset.value = "";
+
     state.updatingInspector = false;
   }
 
@@ -873,6 +1154,7 @@ function main() {
       insIconSize,
       insIconColor,
       insIconRemove,
+      insBoxPreset,
     ];
     for (const c of controls) c.disabled = !enabled;
     gridControls.hidden = !enabled || (insDisplay.value || "") !== "grid";
@@ -1096,6 +1378,10 @@ function main() {
       insBgImage.value = "";
       insBgImageClear.disabled = true;
       onAny();
+    });
+
+    insBoxPreset.addEventListener("change", () => {
+      applyBoxPreset(insBoxPreset.value);
     });
 
     insTargetSelected.addEventListener("click", () => setInspectorTargetMode("selected"));
