@@ -535,7 +535,7 @@ async function initTinyMCE({ onChange, shouldIgnoreChange, onUserEdit }) {
     font_family_formats:
       "System=system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;Arial=arial,helvetica,sans-serif;Georgia=georgia,palatino,serif;Times New Roman='Times New Roman',times,serif;Courier New='Courier New',courier,monospace",
     extended_valid_elements:
-      "span[data-html5-icon|data-html5-icon-text|data-html5-icon-pos|data-html5-icon-size|data-html5-icon-color|contenteditable|aria-hidden|style]",
+      "span[data-html5-icon|data-html5-icon-text|data-html5-icon-pos|data-html5-icon-size|data-html5-icon-color|data-html5-icon-shape|data-html5-icon-bg|contenteditable|aria-hidden|style]",
     setup: (ed) => {
       let ready = false;
       let lastHtml = null;
@@ -916,7 +916,7 @@ function main() {
     badge.dataset.html5IconColor = cleanColor;
     badge.dataset.html5IconShape = cleanShape;
     badge.dataset.html5IconBg = cleanBg;
-    badge.style.color = cleanColor || "";
+    badge.style.color = cleanColor || "initial";
     badge.style.width = hasShape ? `${badgeTotal}px` : `${cleanSize}px`;
     badge.style.height = hasShape ? `${badgeTotal}px` : `${cleanSize}px`;
     badge.style.fontSize = `${cleanSize}px`;
