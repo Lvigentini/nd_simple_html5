@@ -39,7 +39,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "ℹ", pos: "ml", sizePx: 18, color: "#3b82f6", shape: "circle", bgColor: "#dbeafe" },
+    icon: { text: "ℹ", pos: "ml", sizePx: 18, shape: "circle" },
   },
   warning: {
     label: "Warning",
@@ -52,7 +52,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "⚠", pos: "ml", sizePx: 18, color: "#d97706", shape: "circle", bgColor: "#fef3c7" },
+    icon: { text: "⚠", pos: "ml", sizePx: 18, shape: "circle" },
   },
   success: {
     label: "Success",
@@ -65,7 +65,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "✓", pos: "ml", sizePx: 18, color: "#16a34a", shape: "circle", bgColor: "#dcfce7" },
+    icon: { text: "✓", pos: "ml", sizePx: 18, shape: "circle" },
   },
   danger: {
     label: "Danger",
@@ -78,7 +78,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "✕", pos: "ml", sizePx: 18, color: "#dc2626", shape: "circle", bgColor: "#fee2e2" },
+    icon: { text: "✕", pos: "ml", sizePx: 18, shape: "circle" },
   },
 
   // ── Cards ──
@@ -140,7 +140,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "📋", pos: "ml", sizePx: 18, color: "#b45309", shape: "rounded", bgColor: "#fef3c7" },
+    icon: { text: "📋", pos: "ml", sizePx: 18, shape: "rounded" },
   },
   activity: {
     label: "Activity",
@@ -153,7 +153,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "🔧", pos: "ml", sizePx: 18, color: "#2563eb", shape: "rounded", bgColor: "#dbeafe" },
+    icon: { text: "🔧", pos: "ml", sizePx: 18, shape: "rounded" },
   },
   keyConcept: {
     label: "Key Concept",
@@ -166,7 +166,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "💡", pos: "ml", sizePx: 18, color: "#7c3aed", shape: "rounded", bgColor: "#ede9fe" },
+    icon: { text: "💡", pos: "ml", sizePx: 18, shape: "rounded" },
   },
   quote: {
     label: "Quote",
@@ -180,7 +180,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "❝", pos: "tl", sizePx: 20, color: "#6b7280", shape: "rounded", bgColor: "#f3f4f6" },
+    icon: { text: "❝", pos: "tl", sizePx: 20, shape: "rounded" },
   },
   definition: {
     label: "Definition",
@@ -193,7 +193,7 @@ const BOX_PRESETS = {
       "border-radius": "8px",
       "margin-bottom": "12px",
     },
-    icon: { text: "📖", pos: "ml", sizePx: 18, color: "#0d9488", shape: "rounded", bgColor: "#ccfbf1" },
+    icon: { text: "📖", pos: "ml", sizePx: 18, shape: "rounded" },
   },
 };
 
@@ -656,6 +656,7 @@ function main() {
   const insIconPos = $("insIconPos");
   const insIconSize = $("insIconSize");
   const insIconColor = $("insIconColor");
+  const insIconColorClear = $("insIconColorClear");
   const insIconShape = $("insIconShape");
   const insIconBg = $("insIconBg");
   const insIconBgClear = $("insIconBgClear");
@@ -877,9 +878,10 @@ function main() {
     const cleanText = String(text || "").trim();
     const cleanPos = pos === "tl" || pos === "ml" || pos === "bl" ? pos : "ml";
     const cleanSize = Number.isFinite(sizePx) && sizePx > 0 ? Math.round(sizePx) : 18;
-    const cleanColor = normalizeColorToHex(color) || "#111827";
+    const cleanColor = normalizeColorToHex(color) || "";
     const cleanShape = shape === "circle" || shape === "rounded" ? shape : "none";
-    const cleanBg = normalizeColorToHex(bgColor) || "";
+    const hasShape = cleanShape !== "none";
+    const cleanBg = normalizeColorToHex(bgColor) || (hasShape ? "#ffffff" : "");
 
     const existing = el.querySelector("[data-html5-icon='true']");
     if (!cleanText) {
@@ -899,8 +901,7 @@ function main() {
       setInlineStyleWithRestore(el, "margin-left", requiredMarginLeft, "MarginLeft");
     }
 
-    const hasBg = cleanShape !== "none" && cleanBg;
-    const bgPad = hasBg ? Math.round(cleanSize * 0.2) : 0;
+    const bgPad = hasShape ? Math.round(cleanSize * 0.2) : 0;
     const badgeTotal = cleanSize + bgPad * 2;
     const requiredPaddingLeft = badgeTotal + 18;
     const computedPaddingLeft = getNumericPx(cs.paddingLeft) ?? 0;
@@ -915,15 +916,26 @@ function main() {
     badge.dataset.html5IconColor = cleanColor;
     badge.dataset.html5IconShape = cleanShape;
     badge.dataset.html5IconBg = cleanBg;
-    badge.style.color = cleanColor;
-    badge.style.width = hasBg ? `${badgeTotal}px` : `${cleanSize}px`;
-    badge.style.height = hasBg ? `${badgeTotal}px` : `${cleanSize}px`;
+    badge.style.color = cleanColor || "";
+    badge.style.width = hasShape ? `${badgeTotal}px` : `${cleanSize}px`;
+    badge.style.height = hasShape ? `${badgeTotal}px` : `${cleanSize}px`;
     badge.style.fontSize = `${cleanSize}px`;
     badge.style.fontFamily =
       "'Segoe UI Symbol', 'Apple Color Emoji', 'Segoe UI Emoji', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif";
 
     badge.style.borderRadius = cleanShape === "circle" ? "50%" : cleanShape === "rounded" ? "6px" : "";
-    badge.style.backgroundColor = hasBg ? cleanBg : "";
+    badge.style.backgroundColor = cleanBg || "";
+
+    // When shape is active, inherit border from the parent div
+    if (hasShape) {
+      badge.style.borderWidth = cs.borderLeftWidth || cs.borderWidth || "";
+      badge.style.borderStyle = cs.borderLeftStyle || cs.borderStyle || "";
+      badge.style.borderColor = cs.borderLeftColor || cs.borderColor || "";
+    } else {
+      badge.style.borderWidth = "";
+      badge.style.borderStyle = "";
+      badge.style.borderColor = "";
+    }
 
     // Position relative to the left border; keep icon centered on the border edge.
     badge.style.top = "";
@@ -939,11 +951,11 @@ function main() {
 
   function readIconBadge(el) {
     const badge = el.querySelector("[data-html5-icon='true']");
-    if (!badge) return { text: "", pos: "ml", size: 18, color: "#111827", shape: "none", bgColor: "" };
+    if (!badge) return { text: "", pos: "ml", size: 18, color: "", shape: "none", bgColor: "" };
     const text = badge.dataset.html5IconText || badge.textContent || "";
     const pos = badge.dataset.html5IconPos || "ml";
     const size = Number.parseInt(badge.dataset.html5IconSize || "18", 10);
-    const color = badge.dataset.html5IconColor || "#111827";
+    const color = badge.dataset.html5IconColor || "";
     const shape = badge.dataset.html5IconShape || "none";
     const bgColor = badge.dataset.html5IconBg || "";
     return { text, pos, size: Number.isFinite(size) ? size : 18, color, shape, bgColor };
@@ -1042,7 +1054,7 @@ function main() {
       if (preset.icon) {
         applyIconBadge(el, preset.icon);
       } else {
-        applyIconBadge(el, { text: "", pos: "ml", sizePx: 18, color: "#111827" });
+        applyIconBadge(el, { text: "", pos: "ml", sizePx: 18 });
       }
     });
 
@@ -1239,7 +1251,8 @@ function main() {
     insIconText.value = icon.text;
     insIconPos.value = icon.pos;
     insIconSize.value = String(icon.size);
-    insIconColor.value = normalizeColorToHex(icon.color) || "#111827";
+    setColorControl(insIconColor, insIconColorClear, icon.color);
+    insIconColorClear.disabled = !icon.color;
     insIconShape.value = icon.shape || "none";
     setColorControl(insIconBg, insIconBgClear, icon.bgColor);
     insIconBgClear.disabled = !icon.bgColor;
@@ -1248,6 +1261,7 @@ function main() {
     insIconPos.disabled = !hasIcon;
     insIconSize.disabled = !hasIcon;
     insIconColor.disabled = !hasIcon;
+    insIconColorClear.disabled = !hasIcon || !icon.color;
     insIconShape.disabled = !hasIcon;
     insIconBg.disabled = !hasIcon;
     insIconBgClear.disabled = !hasIcon || !icon.bgColor;
@@ -1281,6 +1295,7 @@ function main() {
       insIconPos,
       insIconSize,
       insIconColor,
+      insIconColorClear,
       insIconShape,
       insIconBg,
       insIconBgClear,
@@ -1308,6 +1323,7 @@ function main() {
     insIconPos.disabled = !hasIcon;
     insIconSize.disabled = !hasIcon;
     insIconColor.disabled = !hasIcon;
+    insIconColorClear.disabled = !hasIcon;
     insIconShape.disabled = !hasIcon;
     insIconBg.disabled = !hasIcon;
     insIconBgClear.disabled = !hasIcon;
@@ -1349,7 +1365,7 @@ function main() {
         text: String(insIconText.value || "").trim(),
         pos: String(insIconPos.value || "").trim(),
         sizePx: insIconSize.value === "" ? 18 : Number(insIconSize.value),
-        color: insIconColor.value,
+        color: getColorControlValue(insIconColor),
         shape: insIconShape.value,
         bgColor: getColorControlValue(insIconBg),
       });
@@ -1500,7 +1516,6 @@ function main() {
     insIconText.addEventListener("input", onAny);
     insIconPos.addEventListener("change", onAny);
     insIconSize.addEventListener("change", onAny);
-    insIconColor.addEventListener("input", onAny);
     insIconShape.addEventListener("change", onAny);
     insIconRemove.addEventListener("click", () => {
       insIconText.value = "";
@@ -1510,6 +1525,7 @@ function main() {
     wireColorClear(insColor, insColorClear, onAny);
     wireColorClear(insBg, insBgClear, onAny);
     wireColorClear(insBorderColor, insBorderColorClear, onAny);
+    wireColorClear(insIconColor, insIconColorClear, onAny);
     wireColorClear(insIconBg, insIconBgClear, onAny);
 
     insBgImageClear.addEventListener("click", () => {

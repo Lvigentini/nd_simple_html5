@@ -353,7 +353,18 @@
               </label>
               <label class="iconctl__item">
                 <span class="iconctl__label">Color</span>
-                <input id="insIconColor" class="color" type="color" value="#111827" title="Icon color" />
+                <div class="field__row">
+                  <input id="insIconColor" class="color" type="color" value="#111827" title="Icon color" />
+                  <button
+                    id="insIconColorClear"
+                    type="button"
+                    class="btn btn--small btn--icon btn--ghost"
+                    title="Clear icon color (inherit)"
+                    aria-label="Clear icon color"
+                  >
+                    <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+                  </button>
+                </div>
               </label>
               <label class="iconctl__item">
                 <span class="iconctl__label">BG</span>
