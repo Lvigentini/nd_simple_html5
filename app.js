@@ -983,6 +983,11 @@ function main() {
     defaultOpt.textContent = "— Custom —";
     insBoxPreset.appendChild(defaultOpt);
 
+    const wrapOpt = document.createElement("option");
+    wrapOpt.value = "__wrap__";
+    wrapOpt.textContent = "Wrap selection in <div>";
+    insBoxPreset.appendChild(wrapOpt);
+
     const categories = {};
     for (const [key, preset] of Object.entries(BOX_PRESETS)) {
       const cat = preset.category || "Other";
@@ -1576,7 +1581,26 @@ function main() {
     });
 
     insBoxPreset.addEventListener("change", () => {
-      applyBoxPreset(insBoxPreset.value);
+      const val = insBoxPreset.value;
+      if (val === "__wrap__") {
+        insBoxPreset.value = "";
+        if (!isWysiwygEnabled()) return;
+        const ed = getTinyMCEEditor();
+        if (!ed) return;
+        ed.undoManager.transact(() => {
+          const wrapper = wrapSelectionInDiv(ed);
+          if (wrapper) {
+            state.inspectorTarget = wrapper;
+            ed.nodeChanged();
+            state.visualCanWriteCode = true;
+            syncCodeFromVisual(ed, { silent: true });
+            updateInspectorFromTarget(wrapper);
+            setStatus("Wrapped in <div>");
+          }
+        });
+        return;
+      }
+      applyBoxPreset(val);
     });
 
     insTargetSelected.addEventListener("click", () => setInspectorTargetMode("selected"));
