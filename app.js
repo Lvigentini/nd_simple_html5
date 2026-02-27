@@ -753,7 +753,7 @@ function main() {
 
   function updateInspectorFromTarget(el) {
     if (!el) {
-      inspectorTitle.textContent = "Element inspector";
+      inspectorTitle.textContent = "Advanced Styling";
       inspectorMeta.textContent = "Click in the visual editor to select an element";
       setInspectorFieldsEnabled(false);
       return;

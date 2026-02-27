@@ -82,6 +82,11 @@
       <symbol id="i-box" viewBox="0 0 24 24">
         <path d="M3 5h18v14H3V5zm2 2v10h14V7H5z"></path>
       </symbol>
+      <symbol id="i-brush" viewBox="0 0 24 24">
+        <path
+          d="M7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92 1.22 2.49 2 4 2 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3zm13.71-9.37l-1.34-1.34a.996.996 0 00-1.41 0L9 12.25 11.75 15l8.96-8.96a.996.996 0 000-1.41z"
+        ></path>
+      </symbol>
     </svg>
 
     <header class="topbar">
@@ -106,6 +111,17 @@
           >
             <svg class="icon" aria-hidden="true"><use href="#i-pen"></use></svg>
             <span class="btn__label">WYSIWYG</span>
+          </button>
+          <button
+            id="inspectorToggleBtn"
+            type="button"
+            class="btn btn--icon"
+            aria-pressed="false"
+            title="Advanced Styling panel"
+            hidden
+          >
+            <svg class="icon" aria-hidden="true"><use href="#i-brush"></use></svg>
+            <span class="btn__label">Styling</span>
           </button>
           <button
             id="autoRunBtn"
@@ -198,18 +214,6 @@
       <section class="pane" aria-label="Visual preview">
         <div class="pane__header">
           <div class="pane__title">Visual / Preview</div>
-          <div class="pane__tools">
-            <button
-              id="inspectorToggleBtn"
-              type="button"
-              class="btn btn--small btn--icon"
-              title="Toggle Element Inspector"
-              hidden
-            >
-              <svg class="icon" aria-hidden="true"><use href="#i-target"></use></svg>
-              <span class="btn__label">Inspector</span>
-            </button>
-          </div>
         </div>
 
         <div id="visual" class="visual" hidden>
@@ -232,7 +236,7 @@
     <div id="elementInspector" class="inspector-float" hidden>
       <div id="inspectorTitlebar" class="inspector-float__titlebar">
         <div class="inspector-float__titlebar-left">
-          <span id="inspectorTitle" class="inspector-float__title">Element inspector</span>
+          <span id="inspectorTitle" class="inspector-float__title">Advanced Styling</span>
           <span id="inspectorMeta" class="inspector__meta"></span>
         </div>
         <button
